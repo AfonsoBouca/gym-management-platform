@@ -1,0 +1,73 @@
+/* ==========================================================================
+   TYPOGRAPHY
+   Baseline typographic rules. Consumes design tokens. Individual
+   components may override these locally.
+   ========================================================================== */
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    font-weight: 400;
+}
+
+/* --- Headings ----------------------------------------------------------
+   All headings default to the display font. Components override with
+   specific sizes where needed.
+   ---------------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: var(--leading-tight);
+    color: var(--text-primary);
+    letter-spacing: var(--tracking-tight);
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+/* --- Paragraphs -------------------------------------------------------- */
+p {
+    color: var(--text-secondary);
+    line-height: var(--leading-normal);
+    text-wrap: pretty;
+}
+
+/* --- Inline elements -------------------------------------------------- */
+strong, b {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+em, i {
+    font-style: italic;
+}
+
+small {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+/* --- Links (default state, components may override) ------------------ */
+a {
+    color: inherit;
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+/* --- Utility: underlined link ----------------------------------------- */
+.link-underline {
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 2px;
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.link-underline:hover {
+    border-bottom-color: var(--text-primary);
+}

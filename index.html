@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" class="page-home">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fitness Up — a gym built for those who train in silence. Premium equipment, no compromises.">
+    <title>Fitness Up — Built in Silence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;700&family=JetBrains+Mono:ital,wght@0,100..900&display=swap">    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <!-- SITE HEADER -->
+    <header class="site-header">
+        <div class="site-header__inner">
+            <a href="index.html" class="brand" aria-label="Fitness Up — home">
+                <span class="brand__mark">FITNESS UP</span>
+            </a>
+
+            <nav class="primary-nav" aria-label="Primary">
+                <ul class="primary-nav__list">
+                    <li><a href="classes.html" class="primary-nav__link">Classes</a></li>
+                    <li><a href="#memberships" class="primary-nav__link">Memberships</a></li>
+                    <li><a href="login.html" class="primary-nav__link">Login</a></li>
+                </ul>
+            </nav>
+
+            <a href = "#enroll" class="button button--primary">Enroll</a>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- HERO -->
+        <section class="hero" aria-labelledby="hero-title">
+
+            <!-- Background videos — drop files into assets/videos/ -->
+            <div class="hero__media" aria-hidden="true">
+                <div class="hero__panel">
+                    <video class="hero__video" autoplay muted loop playsinline>
+                        <source src="assets/videos/gym_take1.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="hero__panel">
+                    <video class="hero__video" autoplay muted loop playsinline>
+                        <source src="assets/videos/gym_take2.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="hero__overlay"></div>
+            </div>
+
+            <div class="hero__content">
+                <p class="hero__subtitle">Built in Silence</p>
+                <h1 id="hero-title" class="hero__brand-name">FITNESS UP</h1>
+                <div class="hero__actions">
+                    <a href="#enroll" class="button button--primary button--lg">Enroll now</a>
+                    <a href="classes.html" class="button button--ghost button--lg">View classes</a>
+                </div>
+            </div>
+
+            <a href="#stats" class="hero__scroll" aria-label="Scroll to next section">
+                <span aria-hidden="true">↓</span>
+            </a>
+        </section>
+
+        <!-- STATS -->
+        <section id="stats" class="stats" aria-labelledby="stats-title">
+            <h2 id="stats-title" class="visually-hidden">The facility in numbers</h2>
+            <dl class="stats__list">
+                <div class="stat">
+                    <dt class="stat__label">Square meters</dt>
+                    <dd class="stat__value">2400</dd>
+                </div>
+                <div class="stat">
+                    <dt class="stat__label">Unique machines</dt>
+                    <dd class="stat__value">180</dd>
+                </div>
+                <div class="stat">
+                    <dt class="stat__label">Training floors</dt>
+                    <dd class="stat__value">3</dd>
+                </div>
+                <div class="stat">
+                    <dt class="stat__label">Open daily</dt>
+                    <dd class="stat__value">24h</dd>
+                </div>
+            </dl>
+        </section>
+
+        <!-- HIGHLIGHTS -->
+        <section class="highlights" aria-labelledby="highlights-title">
+            <header class="section-header">
+                <p class="eyebrow">What defines us</p>
+                <h2 id="highlights-title" class="section-header__title">The space</h2>
+            </header>
+
+            <div class="highlights__grid">
+                <article class="highlight">
+                    <figure class="highlight__media"></figure>
+                    <div class="highlight__body">
+                        <h3 class="highlight__title">Legacy</h3>
+                        <p class="highlight__text">
+                            Training as the foundation of a life worth living.
+                            Everything else follows from the work.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="highlight">
+                    <figure class="highlight__media"></figure>
+                    <div class="highlight__body">
+                        <h3 class="highlight__title">Identity</h3>
+                        <p class="highlight__text">
+                            Step inside and you feel it. Every surface, every tool,
+                            chosen to reinforce a single idea.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="highlight">
+                    <figure class="highlight__media"></figure>
+                    <div class="highlight__body">
+                        <h3 class="highlight__title">Equipment</h3>
+                        <p class="highlight__text">
+                            Hand-picked from makers trusted by those who've trained for decades. Nothing on the floor is there by accident.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="highlight">
+                    <figure class="highlight__media"></figure>
+                    <div class="highlight__body">
+                        <h3 class="highlight__title">Silence</h3>
+                        <p class="highlight__text">
+                            No piped-in music. No televisions. The sound of
+                            steel on steel is the only soundtrack that matters.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- MEMBERSHIPS -->
+        <section id="memberships" class="memberships" aria-labelledby="memberships-title">
+            <header class="section-header">
+                <p class="eyebrow">Choose your access</p>
+                <h2 id="memberships-title" class="section-header__title">Memberships</h2>
+            </header>
+
+            <ul class="plan-list">
+                <li>
+                    <article class="plan">
+                        <header class="plan__header">
+                            <h3 class="plan__name">Weekend</h3>
+                            <p class="plan__price">
+                                <span class="plan__currency">€</span><span class="plan__amount">30</span>
+                                <span class="plan__period">/ month</span>
+                            </p>
+                        </header>
+                        <p class="plan__summary">
+                            Access on weekends and public holidays. No time restrictions.
+                        </p>
+                        <ul class="plan__features">
+                            <li>Full facility access</li>
+                            <li>Saturday &amp; Sunday, all hours</li>
+                            <li>Public holidays included</li>
+                        </ul>
+                        <a href="#enroll" class="button button--ghost button--block">Select Weekend</a>
+                    </article>
+                </li>
+                <li>
+                    <article class="plan plan--featured">
+                        <p class="plan__badge">Most chosen</p>
+                        <header class="plan__header">
+                            <h3 class="plan__name">All Access</h3>
+                            <p class="plan__price">
+                                <span class="plan__currency">€</span><span class="plan__amount">55</span>
+                                <span class="plan__period">/ month</span>
+                            </p>
+                        </header>
+                        <p class="plan__summary">
+                            Unrestricted entry, any day, any hour.
+                        </p>
+                        <ul class="plan__features">
+                            <li>24/7 unrestricted access</li>
+                            <li>All classes included</li>
+                            <li>Guest pass, twice a month</li>
+                        </ul>
+                        <a href="#enroll" class="button button--primary button--block">Select All Access</a>
+                    </article>
+                </li>
+                <li>
+                    <article class="plan">
+                        <header class="plan__header">
+                            <h3 class="plan__name">Annual</h3>
+                            <p class="plan__price">
+                                <span class="plan__currency">€</span><span class="plan__amount">550</span>
+                                <span class="plan__period">/ year</span>
+                            </p>
+                        </header>
+                        <p class="plan__summary">
+                            Full-year commitment. Two months saved over monthly billing.
+                        </p>
+                        <ul class="plan__features">
+                            <li>Everything in All Access</li>
+                            <li>Priority class booking</li>
+                            <li>One personal session included</li>
+                        </ul>
+                        <a href="#enroll" class="button button--ghost button--block">Select Annual</a>
+                    </article>
+                </li>
+            </ul>
+        </section>
+
+        <!-- FINAL CTA -->
+        <section id="enroll" class="cta-final" aria-labelledby="cta-title">
+            <h2 id="cta-title" class="cta-final__title">Ready.</h2>
+            <p class="cta-final__text">
+                No consultation. No onboarding call. Walk in, sign up, start.
+            </p>
+            <a href="login.html" class="button button--primary button--lg">Create account</a>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="site-footer__inner">
+
+            <div class="site-footer__brand">
+                <p class="brand__mark brand__mark--footer">FITNESS UP</p>
+                <p class="site-footer__tagline">Built in silence.</p>
+            </div>
+
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__col">
+                    <h2 class="site-footer__heading">Gym</h2>
+                    <ul>
+                        <li><a href="classes.html">Classes</a></li>
+                        <li><a href="#memberships">Memberships</a></li>
+                        <li><a href="#enroll">Enroll</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__col">
+                    <h2 class="site-footer__heading">Info</h2>
+                    <address class="site-footer__contact">
+                        <p>Rua da Boavista 22, 1200-068 Lisbon</p>
+                        <p><a href="mailto:hello@monolith.gym">hello@monolith.gym</a></p>
+                        <p><a href="tel:+351211000000">+351 211 000 000</a></p>
+                    </address>
+                </div>
+                <div class="site-footer__col">
+                    <h2 class="site-footer__heading">Hours</h2>
+                    <dl class="hours">
+                        <div>
+                            <dt>Mon–Fri</dt>
+                            <dd><time>06:00</time>–<time>23:00</time></dd>
+                        </div>
+                        <div>
+                            <dt>Sat–Sun</dt>
+                            <dd><time>08:00</time>–<time>21:00</time></dd>
+                        </div>
+                    </dl>
+                </div>
+            </nav>
+
+            <div class="site-footer__base">
+                <p class="site-footer__copy">© 2026 Fitness Up. All rights reserved.</p>
+                <ul class="site-footer__legal">
+                    <li><a href="#">Terms</a></li>
+                    <li><a href="#">Privacy</a></li>
+                </ul>
+            </div>
+
+        </div>
+    </footer>
+
+</body>
+</html>

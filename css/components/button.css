@@ -1,0 +1,86 @@
+/* ==========================================================================
+   BUTTON
+   Base button + variants (primary, ghost) + sizes (lg) + block modifier.
+   Combine classes freely: .button.button--primary.button--lg
+   ========================================================================== */
+
+/* --- Base button ---------------------------------------------------------
+   The shared foundation: layout, typography, transitions. All variants
+   inherit from this. Structural styles only — no colors yet.
+   -------------------------------------------------------------------------- */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+
+    padding: 0.875rem 1.75rem;
+
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    text-align: center;
+    white-space: nowrap;
+
+    border: var(--border-width) solid transparent;
+    border-radius: 0;
+    cursor: pointer;
+
+    transition:
+        background-color var(--duration-normal) var(--ease-out),
+        color            var(--duration-normal) var(--ease-out),
+        border-color     var(--duration-normal) var(--ease-out),
+        transform        var(--duration-normal) var(--ease-out);
+}
+
+.button:active {
+    transform: translateY(1px);
+}
+
+/* --- Variant: primary ----------------------------------------------------
+   The filled, high-emphasis button. Used for the most important action
+   on each page (Enroll, Create account).
+   -------------------------------------------------------------------------- */
+.button--primary {
+    background-color: var(--accent);
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+.button--primary:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+/* --- Variant: ghost ------------------------------------------------------
+   Outlined, low-emphasis. Used alongside a primary button to offer a
+   secondary path ("View classes" next to "Enroll now").
+   -------------------------------------------------------------------------- */
+.button--ghost {
+    background-color: transparent;
+    color: var(--text-primary);
+    border-color: var(--border-subtle);
+}
+
+.button--ghost:hover {
+    background-color: var(--bg-elevated);
+    border-color: var(--border-strong);
+}
+
+/* --- Size: large ---------------------------------------------------------
+   Bigger padding, bigger font. For hero CTAs and end-of-page pushes.
+   -------------------------------------------------------------------------- */
+.button--lg {
+    padding: 1.125rem 2.25rem;
+    font-size: var(--text-base);
+}
+
+/* --- Modifier: block -----------------------------------------------------
+   Full-width button. Used inside plan cards where it spans the card.
+   -------------------------------------------------------------------------- */
+.button--block {
+    display: flex;
+    width: 100%;
+}
