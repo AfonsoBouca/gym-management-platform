@@ -29,11 +29,6 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transition: transform var(--duration-slow) var(--ease-out);
-}
-
-.highlight:hover .highlight__image {
-    transform: scale(1.04);
 }
 
 /* --- Body: overlaid at the bottom with gradient ----------------------- */

@@ -4,11 +4,6 @@
    Components (nav, button, card, footer) are imported separately.
    ========================================================================== */
 
-/* Scroll snap scoped to the home page only via class on <html> */
-html.page-home {
-    scroll-snap-type: y proximity;
-}
-
 
 /* --- Shared section container -----------------------------------------
    Most sections on the page need the same max-width and padding. Rather
@@ -72,7 +67,6 @@ main>section.hero {
     padding: 6rem var(--gutter);
     overflow: hidden;
     background-color: var(--color-black);
-    scroll-snap-align: start;
 }
 
 /* --- Background videos (split screen) --------------------------------- */
@@ -178,40 +172,8 @@ main>section.hero {
     width: 100%;
 }
 
-/* --- Scroll indicator -------------------------------------------------
-   Small arrow at the bottom center inviting the user to scroll. Floats
-   gently up and down.
-   ---------------------------------------------------------------------- */
 .hero__scroll {
-    position: absolute;
-    bottom: var(--space-8);
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-
-    font-size: 2rem;
-    color: var(--text-secondary);
-    padding: var(--space-2);
-    animation: scroll-hint 2.5s ease-in-out infinite;
-    transition: color var(--duration-normal) var(--ease-out);
-}
-
-.hero__scroll:hover {
-    color: var(--text-primary);
-}
-
-@keyframes scroll-hint {
-
-    0%,
-    100% {
-        transform: translate(-50%, 0);
-        opacity: 0.4;
-    }
-
-    50% {
-        transform: translate(-50%, 8px);
-        opacity: 1;
-    }
+    display: none;
 }
 
 
@@ -223,134 +185,62 @@ main>section.hero {
 .stats {
     border-top: var(--border-width) solid var(--border-subtle);
     border-bottom: var(--border-width) solid var(--border-subtle);
-    overflow: hidden;
-    padding: var(--space-4) 0;
-    /* override the shared section padding */
+    padding: var(--space-6) var(--gutter);
     max-width: none !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-.ticker {
-    overflow: hidden;
+    text-align: center;
 }
 
 .ticker__track {
-    display: flex;
-    width: max-content;
-    animation: ticker 12s linear infinite;
-    will-change: transform;
-}
-
-.ticker__track span {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 5vw, 4rem);
+    font-size: clamp(1rem, 2vw, 1.5rem);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
-    color: var(--text-primary);
-    white-space: nowrap;
+    color: var(--text-secondary);
 }
 
-@keyframes ticker {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
+.ticker__track span + span {
+    display: none;
 }
 
 
 /* ==========================================================================
    HIGHLIGHTS
-   Horizontal scroll slider with peek effect.
    ========================================================================== */
 
-.highlights {
-    overflow: hidden;
-}
-
 .highlights__grid {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-6);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-left: var(--gutter);
-    padding-bottom: var(--space-4); /* space for scrollbar */
-    cursor: grab;
-}
-
-.highlights__grid:active {
-    cursor: grabbing;
-}
-
-/* Hide scrollbar visually but keep it functional */
-.highlights__grid::-webkit-scrollbar {
-    height: 3px;
-}
-
-.highlights__grid::-webkit-scrollbar-track {
-    background: var(--border-subtle);
-}
-
-.highlights__grid::-webkit-scrollbar-thumb {
-    background: var(--accent);
 }
 
 .highlights__grid .highlight {
-    flex: 0 0 88vw;
-    scroll-snap-align: center;
-    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    min-height: 60vh;
 }
 
-.highlights__grid .highlight .highlight__media {
-    aspect-ratio: unset;
-    flex: 1;
-}
-
-@media (min-width: 48rem) {
-    .highlights__grid .highlight {
-        flex: 0 0 60vw;
-        min-height: 75vh;
-    }
-}
-
-@media (min-width: 64rem) {
-    .highlights__grid .highlight {
-        flex: 0 0 45vw;
+@media (max-width: 47.9rem) {
+    .highlights__grid {
+        grid-template-columns: 1fr;
     }
 }
 
 
 /* ==========================================================================
    CLASSES
-   Accordion-style flex row. Hover a card to expand it.
    ========================================================================== */
 
-.classes {
-    overflow: hidden;
-}
-
 .classes__accordion {
-    display: flex;
-    gap: 2px;
-    height: 72vh;
-    min-height: 480px;
-    overflow: hidden;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-3);
 }
 
 .class-card {
     position: relative;
-    flex: 1;
+    height: 640px;
     overflow: hidden;
-    cursor: pointer;
     background-color: var(--color-charcoal);
-    transition: flex 600ms var(--ease-out);
-}
-
-/* Compress all other cards when one is hovered */
-.classes__accordion:has(.class-card:hover) .class-card:not(:hover) {
-    flex: 0.4;
-}
-
-.class-card:hover {
-    flex: 5;
 }
 
 /* --- Image --------------------------------------------------------------- */
@@ -364,14 +254,12 @@ main>section.hero {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    filter: brightness(0.5) grayscale(25%);
-    transition: filter 600ms var(--ease-out),
-                transform 600ms var(--ease-out);
+    filter: brightness(0.45) grayscale(20%);
+    transition: filter var(--duration-normal) var(--ease-out);
 }
 
 .class-card:hover .class-card__image {
     filter: brightness(0.3) grayscale(0%);
-    transform: scale(1.06);
 }
 
 /* --- Body overlay -------------------------------------------------------- */
@@ -379,61 +267,30 @@ main>section.hero {
     position: absolute;
     inset: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-8);
+    align-items: flex-end;
+    padding: var(--space-6);
     background: linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.9) 0%,
-        rgba(0, 0, 0, 0.2) 55%,
+        rgba(0, 0, 0, 0.88) 0%,
+        rgba(0, 0, 0, 0.1) 60%,
         transparent 100%
     );
 }
 
-/* --- Vertical name (collapsed state) ------------------------------------ */
 .class-card__name--v {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    text-transform: uppercase;
-    color: var(--text-primary);
-    letter-spacing: 0.12em;
-    white-space: nowrap;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    opacity: 1;
-    transition: opacity 200ms var(--ease-out);
-    user-select: none;
+    display: none;
 }
 
-.class-card:hover .class-card__name--v {
-    opacity: 0;
-}
-
-/* --- Expanded content (shown on hover) ---------------------------------- */
+/* --- Content (always visible) ------------------------------------------- */
 .class-card__expanded {
-    position: absolute;
-    bottom: var(--space-8);
-    left: var(--space-8);
-    right: var(--space-8);
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-    opacity: 0;
-    transform: translateY(0.75rem);
-    transition: opacity 300ms var(--ease-out) 100ms,
-                transform 400ms var(--ease-out) 100ms;
-    pointer-events: none;
-}
-
-.class-card:hover .class-card__expanded {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
+    gap: var(--space-3);
 }
 
 .class-card__name--h {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 3vw, 3.5rem);
+    font-size: clamp(1.5rem, 2.5vw, 2.5rem);
     text-transform: uppercase;
     color: var(--text-primary);
     letter-spacing: 0.02em;
@@ -442,36 +299,9 @@ main>section.hero {
 
 .class-card__desc {
     font-family: var(--font-body);
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
     line-height: var(--leading-normal);
     color: var(--text-secondary);
-    max-width: 30rem;
-}
-
-/* --- Mobile: horizontal scroll ------------------------------------------ */
-@media (max-width: 47.9rem) {
-    .classes__accordion {
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        height: 65vh;
-        gap: var(--space-3);
-    }
-
-    .class-card,
-    .classes__accordion:has(.class-card:hover) .class-card:not(:hover) {
-        flex: 0 0 78vw;
-        scroll-snap-align: center;
-    }
-
-    .class-card__name--v {
-        display: none;
-    }
-
-    .class-card__expanded {
-        opacity: 1;
-        transform: none;
-        pointer-events: auto;
-    }
 }
 
 
