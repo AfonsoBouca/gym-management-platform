@@ -18,6 +18,13 @@
     --color-blood:        #8b0000;
     --color-blood-bright: #a30f0f;
 
+    --color-lilac:        #7c3aed;
+    --color-lilac-bright: #6d28d9;
+
+    --color-gold:         #C9A84C;
+    --color-gold-bright:  #F5D67A;
+    --color-gold-dark:    #8B6914;
+
     /* --- Semantic roles (what components should use) ------------------- */
     --bg-primary:     var(--color-ink);
     --bg-surface:     var(--color-charcoal);

@@ -8,36 +8,27 @@
 
 /* ==========================================================================
    HIGHLIGHT CARD
-   Image on top, title + text below. Sharp edges, dark surface.
+   Full-height image with text overlay at the bottom.
    ========================================================================== */
 
 .highlight {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--bg-surface);
-    border: var(--border-width) solid var(--border-subtle);
+    position: relative;
     overflow: hidden;
-    transition: border-color var(--duration-normal) var(--ease-out);
+    background-color: var(--color-black);
 }
 
-.highlight:hover {
-    border-color: var(--border-strong);
-}
-
-/* --- Media area ---------------------------------------------------------
-   Fixed aspect ratio so all cards in the grid align perfectly even when
-   the images have different dimensions.
-   -------------------------------------------------------------------------- */
+/* --- Media: fills the entire card -------------------------------------- */
 .highlight__media {
-    aspect-ratio: 4 / 3;
-    overflow: hidden;
-    background-color: var(--bg-elevated); /* placeholder while images are missing */
+    position: absolute;
+    inset: 0;
+    background-color: var(--bg-elevated);
 }
 
 .highlight__image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     transition: transform var(--duration-slow) var(--ease-out);
 }
 
@@ -45,18 +36,26 @@
     transform: scale(1.04);
 }
 
-/* --- Body --------------------------------------------------------------- */
+/* --- Body: overlaid at the bottom with gradient ----------------------- */
 .highlight__body {
-    padding: var(--space-8) var(--space-6);
+    position: relative;
+    z-index: 1;
+    margin-top: auto;
+    padding: var(--space-12) var(--space-8);
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    flex-grow: 1; /* body fills remaining height so cards align */
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.92) 0%,
+        rgba(0, 0, 0, 0.6) 60%,
+        transparent 100%
+    );
 }
 
 .highlight__title {
     font-family: var(--font-display);
-    font-size: var(--text-2xl);
+    font-size: clamp(3.5rem, 7vw, 6rem);
     letter-spacing: 0.02em;
     color: var(--text-primary);
     text-transform: uppercase;
@@ -64,7 +63,7 @@
 
 .highlight__text {
     font-family: var(--font-body);
-    font-size: 0.9375rem;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
     line-height: var(--leading-normal);
     color: var(--text-secondary);
 }
@@ -75,10 +74,15 @@
    Membership tier. Vertical layout: name + price, summary, features, CTA.
    ========================================================================== */
 
+.plan-list > li {
+    display: flex;
+}
+
 .plan {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
+    flex: 1;
 
     background-color: var(--bg-surface);
     border: var(--border-width) solid var(--border-subtle);
@@ -92,9 +96,7 @@
     border-color: var(--border-strong);
 }
 
-/* --- Featured variant ---------------------------------------------------
-   The middle "most chosen" plan. Blood red border, slightly lifted.
-   -------------------------------------------------------------------------- */
+/* --- Featured variant: red (Essential — most chosen) ------------------- */
 .plan--featured {
     border-color: var(--accent);
     background-color: var(--bg-elevated);
@@ -102,6 +104,52 @@
 
 .plan--featured:hover {
     border-color: var(--accent-hover);
+}
+
+/* --- Lilac variant (All Access — best offer) --------------------------- */
+.plan--lilac {
+    border-color: var(--color-lilac);
+    background-color: var(--bg-elevated);
+}
+
+.plan--lilac:hover {
+    border-color: var(--color-lilac-bright);
+}
+
+.plan--lilac .plan__badge {
+    background-color: var(--color-lilac);
+}
+
+/* --- Gold variant (Elite — premium tier) -------------------------------- */
+.plan--gold {
+    border-color: var(--color-gold);
+    background-color: var(--bg-elevated);
+}
+
+.plan--gold:hover {
+    border-color: var(--color-gold-bright);
+}
+
+.plan--gold .plan__badge {
+    background-color: var(--color-gold);
+    color: var(--color-ink);
+}
+
+.plan--gold .plan__name {
+    color: var(--color-gold);
+}
+
+.plan--gold .plan__currency,
+.plan--gold .plan__amount {
+    color: var(--color-gold);
+}
+
+.plan--gold .plan__features li::before {
+    background-color: var(--color-gold);
+}
+
+.plan--gold .plan__header {
+    border-bottom-color: rgba(201, 168, 76, 0.25);
 }
 
 .plan__badge {
