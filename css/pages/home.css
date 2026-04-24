@@ -184,77 +184,6 @@ main>section.hero {
 }
 
 
-.classes__accordion {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 0.75rem;
-}
-
-.class-card {
-    position: relative;
-    height: 640px;
-    overflow: hidden;
-    background-color: #141414;
-}
-
-.class-card__media {
-    position: absolute;
-    inset: 0;
-}
-
-.class-card__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    filter: brightness(0.45) grayscale(20%);
-    transition: filter 250ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.class-card:hover .class-card__image {
-    filter: brightness(0.3) grayscale(0%);
-}
-
-.class-card__body {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: flex-end;
-    padding: 1.5rem;
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.88) 0%,
-        rgba(0, 0, 0, 0.1) 60%,
-        transparent 100%
-    );
-}
-
-.class-card__name--v {
-    display: none;
-}
-
-.class-card__expanded {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.class-card__name--h {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 2.5vw, 2.5rem);
-    text-transform: uppercase;
-    color: var(--text);
-    letter-spacing: 0.02em;
-    line-height: 1;
-}
-
-.class-card__desc {
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    line-height: 1.6;
-    color: var(--text-soft);
-}
-
 
 .memberships {
     padding-top: 2rem;
@@ -342,29 +271,6 @@ main>section.hero {
     letter-spacing: 0.05em;
 }
 
-.location__contact-link {
-    display: block;
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 1rem 1.5rem;
-    text-align: center;
-    transition: border-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
-                color 150ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.location__contact-link + .location__contact-link {
-    margin-top: 0.75rem;
-}
-
-.location__contact-link:hover {
-    border-color: var(--text);
-    color: var(--text);
-}
 
 @media (min-width: 48rem) {
     .location {
@@ -377,28 +283,6 @@ main>section.hero {
 }
 
 
-.cta-final {
-    text-align: center;
-    padding: 8rem 1.5rem;
-}
-
-.cta-final__title {
-    font-family: var(--font-display);
-    font-size: clamp(4rem, 14vw, 10rem);
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    color: var(--text);
-    margin-bottom: 1.5rem;
-}
-
-.cta-final__text {
-    max-width: 28rem;
-    margin: 0 auto 2.5rem;
-    font-size: 1.0625rem;
-    line-height: 1.6;
-    color: var(--text-soft);
-}
 
 
 @media (min-width: 48rem) {
@@ -423,11 +307,7 @@ main>section.hero {
         padding: 10rem 3rem 8rem;
     }
 
-    .hero__lede {
-        font-size: 1.125rem;
-    }
-
-    .plan-list {
+.plan-list {
         grid-template-columns: repeat(3, 1fr);
         gap: 2rem;
     }

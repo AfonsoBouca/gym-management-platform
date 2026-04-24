@@ -36,11 +36,10 @@
 
 
 .primary-nav {
-    display: block; 
+    display: block;
     margin-left: auto;
     flex-shrink: 1;
     min-width: 0;
-    overflow: hidden;
 }
 
 .primary-nav__list {
@@ -93,16 +92,82 @@
 }
 
 
-/* hide nav links when they no longer fit */
-@media (max-width: 1280px) {
-    .primary-nav {
-        display: none;
-    }
+
+.hamburger__toggle {
+    display: none;
 }
 
-/* hide join now when it doesn't fit */
-@media (max-width: 620px) {
+.hamburger__btn {
+    display: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: var(--text);
+    line-height: 1;
+}
+
+.hamburger__btn::before {
+    content: '\2630';
+    font-size: 1.75rem;
+}
+
+#hamburger:checked ~ .hamburger__btn::before {
+    content: '\2715';
+}
+
+
+
+@media (max-width: 1280px) {
+    .hamburger__btn {
+        display: block;
+        margin-left: auto;
+    }
+
     .site-header .button--primary {
         display: none;
+    }
+
+    .primary-nav {
+        display: block;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-left: 0;
+        z-index: 99;
+    }
+
+    .primary-nav__list {
+        flex-direction: column;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    .primary-nav__list li {
+        max-height: 0;
+        padding: 0 1em;
+        background-color: var(--bg-surface);
+        text-align: left;
+        opacity: 0;
+        transition: all .3s ease-in-out;
+    }
+
+    #hamburger:checked ~ .primary-nav .primary-nav__list li {
+        max-height: max-content;
+        padding: 1em;
+        opacity: 1;
+    }
+
+    .primary-nav__list li:nth-child(1) {
+        border-left: 5px solid var(--accent);
+    }
+
+    .primary-nav__list li:nth-child(2) {
+        border-left: 5px solid #5a9f3e;
+    }
+
+    .primary-nav__link {
+        display: block;
+        font-size: 1rem;
     }
 }
