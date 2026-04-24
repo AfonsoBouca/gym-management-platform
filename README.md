@@ -1,4 +1,6 @@
-# This website is based on multiple gym websites on the internet.
+# ltw12g09
+
+### This website is based on multiple gym websites on the internet.
 
 ### All of our assets are in the folder assets. This includes all the images and videos used in the website, along with the classes' images.
 
@@ -27,8 +29,6 @@ that serve as the primary evalution element. These files can be found directly i
 * You can also open them dragging the file into the browser search bar, next to any of the browser tabs open.
 
 * Last but not least, you can also open it installing the Visual Studio Code extension `"Live Server"`, right-click on your HTML file, and click `"Open with Live Server"`.
-
-# ltw12g09
 
 ## Features
 
