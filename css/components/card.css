@@ -1,23 +1,10 @@
-/* ==========================================================================
-   CARDS
-   Shared styles for the two card types used on the homepage:
-   - .highlight  → identity blocks (Legacy, Identity, Hardware, Silence)
-   - .plan       → membership tiers (Weekend, All Access, Annual)
-   ========================================================================== */
-
-
-/* ==========================================================================
-   HIGHLIGHT CARD
-   Full-height image with text overlay at the bottom.
-   ========================================================================== */
-
 .highlight {
     position: relative;
     overflow: hidden;
     background-color: #000;
 }
 
-/* --- Media: fills the entire card -------------------------------------- */
+
 .highlight__media {
     position: absolute;
     inset: 0;
@@ -31,7 +18,7 @@
     object-position: center;
 }
 
-/* --- Body: overlaid at the bottom with gradient ----------------------- */
+
 .highlight__body {
     position: relative;
     z-index: 1;
@@ -64,10 +51,7 @@
 }
 
 
-/* ==========================================================================
-   PLAN CARD
-   Membership tier. Vertical layout: name + price, summary, features, CTA.
-   ========================================================================== */
+
 
 .plan-list > li {
     display: flex;
@@ -83,7 +67,7 @@
     border: 1px solid var(--border);
     padding: 2.5rem 2rem;
 
-    position: relative; /* for the featured badge */
+    position: relative; 
     transition: border-color 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -91,7 +75,7 @@
     border-color: var(--border-strong);
 }
 
-/* --- Featured variant: red (Essential — most chosen) ------------------- */
+
 .plan--featured {
     border-color: var(--accent);
     background-color: var(--bg-elevated);
@@ -101,7 +85,7 @@
     border-color: var(--accent-hover);
 }
 
-/* --- Lilac variant (All Access — best offer) --------------------------- */
+
 .plan--lilac {
     border-color: #7c3aed;
     background-color: var(--bg-elevated);
@@ -115,7 +99,7 @@
     background-color: #7c3aed;
 }
 
-/* --- Gold variant (Elite — premium tier) -------------------------------- */
+
 .plan--gold {
     border-color: #C9A84C;
     background-color: var(--bg-elevated);
@@ -165,7 +149,7 @@
     padding: 0.375rem 0.75rem;
 }
 
-/* --- Header (name + price) --------------------------------------------- */
+
 .plan__header {
     display: flex;
     flex-direction: column;
@@ -209,7 +193,7 @@
     margin-left: 0.375rem;
 }
 
-/* --- Summary text ------------------------------------------------------- */
+
 .plan__summary {
     font-family: var(--font-body);
     font-size: 1.05rem;
@@ -217,12 +201,12 @@
     color: var(--text-soft);
 }
 
-/* --- Feature list ------------------------------------------------------- */
+
 .plan__features {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    flex-grow: 1; /* push CTA to the bottom when content varies */
+    flex-grow: 1; 
 }
 
 .plan__features li {
@@ -233,7 +217,7 @@
     position: relative;
 }
 
-/* Custom bullet: a small red square before each feature. */
+
 .plan__features li::before {
     content: "";
     position: absolute;

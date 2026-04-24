@@ -1,10 +1,3 @@
-/* ==========================================================================
-   FORM
-   Reusable form-element styles: groups, labels, inputs, checkboxes, links.
-   Combine with page-level CSS (e.g. auth.css) for layout specifics.
-   ========================================================================== */
-
-/* --- Group: vertical stack of label + input -------------------------------- */
 .form__group {
     display: flex;
     flex-direction: column;
@@ -17,14 +10,12 @@
     gap: 0.75rem;
 }
 
-/* --- Label row: label + right-aligned link (e.g. "Forgot password?") ------ */
 .form__label-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
 }
 
-/* --- Labels ---------------------------------------------------------------- */
 .form__label {
     font-family: var(--font-mono);
     font-size: 0.75rem;
@@ -42,7 +33,6 @@
     cursor: pointer;
 }
 
-/* --- Text inputs ---------------------------------------------------------- */
 .form__input {
     width: 100%;
     padding: 0.75rem 1rem;
@@ -75,7 +65,6 @@
     background-color: var(--bg-elevated);
 }
 
-/* --- Checkbox ------------------------------------------------------------- */
 .form__checkbox {
     appearance: none;
     -webkit-appearance: none;
@@ -117,7 +106,6 @@
     outline-offset: 2px;
 }
 
-/* --- Form links ----------------------------------------------------------- */
 .form__link {
     font-family: var(--font-body);
     font-size: 0.75rem;

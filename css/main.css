@@ -1,23 +1,18 @@
-/* ==========================================================================
-   MAIN
-   Entry point for all styles.
-   Defines cascade layer order and imports every stylesheet in sequence.
-   ========================================================================== */
-
 @layer reset, tokens, base, components, pages;
 
-/* --- Base: foundational rules ----------------------------------------- */
+
 @import url("base/reset.css")      layer(reset);
 @import url("base/tokens.css")     layer(tokens);
 @import url("base/typography.css") layer(base);
 
-/* --- Components: reusable building blocks ----------------------------- */
+
 @import url("components/nav.css")    layer(components);
 @import url("components/button.css") layer(components);
 @import url("components/card.css")   layer(components);
 @import url("components/footer.css") layer(components);
 @import url("components/form.css")   layer(components);
 
-/* --- Pages: page-specific styles -------------------------------------- */
+
 @import url("pages/home.css") layer(pages);
 @import url("pages/auth.css") layer(pages);
+@import url("pages/classes.css") layer(pages);

@@ -1,19 +1,11 @@
-/* ==========================================================================
-   AUTH PAGE
-   Login / Register layout. Centers a single card vertically on the
-   viewport with a subtle top accent line.
-   ========================================================================== */
-
-/* --- Page wrapper: full-viewport center ----------------------------------- */
 .auth {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 7rem);   /* viewport minus header height       */
+    min-height: calc(100vh - 7rem);
     padding: 2rem 1.5rem;
 }
 
-/* --- Card: the form container -------------------------------------------- */
 .auth__card {
     width: 100%;
     max-width: 28rem;
@@ -25,11 +17,9 @@
     background-color: var(--bg-surface);
     border: 1px solid var(--border);
 
-    /* Accent top line — a thin red bar that brands the card */
     border-top: 3px solid var(--accent);
 }
 
-/* --- Header -------------------------------------------------------------- */
 .auth__header {
     display: flex;
     flex-direction: column;
@@ -49,14 +39,12 @@
     color: var(--text-muted);
 }
 
-/* --- Form stack inside the card ------------------------------------------ */
 .auth__card .form {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
-/* --- Divider ("or") ------------------------------------------------------ */
 .auth__divider {
     display: flex;
     align-items: center;
@@ -79,14 +67,12 @@
     text-transform: uppercase;
 }
 
-/* --- Footer text (register prompt) --------------------------------------- */
 .auth__footer-text {
     text-align: center;
     font-size: var(--text-sm);
     color: var(--text-muted);
 }
 
-/* --- Responsive ---------------------------------------------------------- */
 @media (max-width: 30rem) {
     .auth__card {
         padding: 2rem 1.5rem;
