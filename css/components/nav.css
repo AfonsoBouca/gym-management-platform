@@ -101,7 +101,7 @@
 }
 
 /* hide join now when it doesn't fit */
-@media (max-width: 600px) {
+@media (max-width: 620px) {
     .site-header .button--primary {
         display: none;
     }
