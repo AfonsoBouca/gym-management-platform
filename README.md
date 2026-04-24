@@ -9,9 +9,9 @@ In the `base folder`, it does a CSS reset and sets the foundation for our design
 In the `components` folder, we define all major UI components, both visually and structurally.
 
 In the `pages` folder, we have the 3 pages requested for this delivery:
-The home page - `home.css`, 
-The classes page - `classes.css`,
-and the authentication page - `auth.css`
+* The home page -  `home.css`, 
+* the classes page - `classes.css`, and
+* the authentication page - `auth.css`
 
 In the `main.css` file, we define our architecture in order of priority.
 
