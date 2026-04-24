@@ -1,0 +1,98 @@
+/* ==========================================================================
+   AUTH PAGE
+   Login / Register layout. Centers a single card vertically on the
+   viewport with a subtle top accent line.
+   ========================================================================== */
+
+/* --- Page wrapper: full-viewport center ----------------------------------- */
+.auth {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 7rem);   /* viewport minus header height       */
+    padding: var(--space-8) var(--gutter);
+}
+
+/* --- Card: the form container -------------------------------------------- */
+.auth__card {
+    width: 100%;
+    max-width: 28rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+
+    padding: var(--space-12) var(--space-8);
+    background-color: var(--bg-surface);
+    border: var(--border-width) solid var(--border-subtle);
+
+    /* Accent top line — a thin red bar that brands the card */
+    border-top: 3px solid var(--accent);
+}
+
+/* --- Header -------------------------------------------------------------- */
+.auth__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    text-align: center;
+}
+
+.auth__title {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+}
+
+.auth__subtitle {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+/* --- Form stack inside the card ------------------------------------------ */
+.auth__card .form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+/* --- Divider ("or") ------------------------------------------------------ */
+.auth__divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.auth__divider::before,
+.auth__divider::after {
+    content: "";
+    flex: 1;
+    height: var(--border-width);
+    background-color: var(--border-subtle);
+}
+
+.auth__divider-text {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+}
+
+/* --- Footer text (register prompt) --------------------------------------- */
+.auth__footer-text {
+    text-align: center;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+/* --- Responsive ---------------------------------------------------------- */
+@media (max-width: 30rem) {
+    .auth__card {
+        padding: var(--space-8) var(--space-6);
+    }
+
+    .auth__title {
+        font-size: var(--text-xl);
+    }
+}
