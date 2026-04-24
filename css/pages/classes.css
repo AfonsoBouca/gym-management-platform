@@ -219,7 +219,7 @@
 }
 
 
-@media (max-width: 47.9rem) {
+@media (max-width: 800px) {
     .class-list__rows {
         grid-template-columns: 1fr;
     }
