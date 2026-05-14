@@ -57,7 +57,10 @@ that serve as the primary evalution element. These files can be found directly i
 - [ ] Oversee and ensure the smooth operation of the entire system.
 
 **Extra:**
-- [ ] Something extra (e.g., personal training bookings, membership plans, waitlist, ...).
+- [ ] Personal training bookings.
+- [ ] Class waitlist.
+- [ ] Membership plans.
+- [ ] Member progress tracking.
 
 ## Running
 Running still not implemented
