@@ -16,7 +16,7 @@ CREATE TABLE users (
 -- this serves to store hashed tokens for the remember me login feature
 -- raw token is in users' cookies, sha256 hash stored only.
 
-CREATE TBLE remember_me_tokens (
+CREATE TABLE remember_me_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     token_hash TEXT NOT NULL UNIQUE,
@@ -69,8 +69,10 @@ CREATE TABLE enrollments(
     member_id INTEGER NOT NULL,
     session_id INTEGER NOT NULL,
     enrolled_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status TEXT NOT NULL CHECK (status IN ('enrolled', 'cancelled', 'waitlisted')),
+    status TEXT NOT NULL CHECK (status IN ('enrolled', 'cancelled', 'waitlisted')) DEFAULT 'enrolled',
     waitlist_pos INTEGER, --null if enr, 1-based if waitlist, updated by app if waitlist shifts
+    attended INTEGER NOT NULL DEFAULT 0, -- 0 not attended, 1 attented
+
     FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE RESTRICT,
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
     UNIQUE (member_id, session_id)
@@ -90,7 +92,7 @@ CREATE TABLE equipment(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     type TEXT NOT NULL,
     name TEXT NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('available', 'in_use', 'maintenance'))
+    status TEXT NOT NULL CHECK (status IN ('available', 'in_use', 'maintenance')),
     notes TEXT --faulty equipment, any optional details
 );
 
@@ -123,7 +125,7 @@ CREATE TABLE personal_bookings(
     booking_date TEXT NOT NULL,
     start_time TEXT NOT NULL,
     end_time TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'booked' CHECK (status IN ('booked', 'cancelled', 'completed')) DEFAULT 'booked',
+    status TEXT NOT NULL DEFAULT 'booked' CHECK (status IN ('booked', 'cancelled', 'completed')),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE RESTRICT,
     FOREIGN KEY (trainer_id) REFERENCES users(id) ON DELETE RESTRICT,
@@ -136,7 +138,7 @@ CREATE TABLE workout_logs (
     enrollment_id INTEGER, --can be null if no enrollments happen
     logged_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     duration_minutes INTEGER CHECK(duration_minutes > 0),
-    calories_burnt INTEGER CHECK (calories_burnt > 0),
+    calories_burnt INTEGER CHECK (calories_burnt >= 0),
     notes TEXT,
     FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE
