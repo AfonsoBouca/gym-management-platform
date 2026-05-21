@@ -1,3 +1,40 @@
+<?php
+require_once __DIR__ . '/includes/auth.php';
+
+if (!empty($_SESSION['user_id'])) {
+    redirect_by_role($_SESSION['role']);
+}
+
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    if (!csrf_verify($_POST['csrf_token'] ?? '')) {
+        $error = 'Invalid request.';
+    } else {
+        $pdo  = get_db();
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = 1");
+        $stmt->execute([$_POST['email'] ?? '']);
+        $user = $stmt->fetch();
+
+        if (!$user || !password_verify($_POST['password'] ?? '', $user['password_hash'])) {
+            $error = 'Invalid email or password.';
+        } else {
+            session_regenerate_id(true);
+            $_SESSION['user_id']   = $user['id'];
+            $_SESSION['role']      = $user['role'];
+            $_SESSION['user_name'] = $user['name'];
+
+            if (!empty($_POST['remember'])) {
+                set_remember_cookie($user['id']);
+            }
+
+            redirect_by_role($user['role']);
+        }
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en" class="page-auth">
 
@@ -28,7 +65,7 @@
             <nav class="primary-nav" aria-label="Primary">
                 <ul class="primary-nav__list">
                     <li><a href="classes.html" class="primary-nav__link">Classes</a></li>
-                    <li><a href="login.html" class="primary-nav__link" aria-current="page">Login</a></li>
+                    <li><a href="login.php" class="primary-nav__link" aria-current="page">Login</a></li>
                 </ul>
             </nav>
 
@@ -45,7 +82,9 @@
                 <p class="auth__subtitle">Sign in to continue your training.</p>
             </header>
 
-            <form class="form" action="#" method="post" id="login-form">
+            <form class="form" action="login.php" method="post" id="login-form">
+
+                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 
                 <div class="form__group">
                     <label for="login-email" class="form__label">Email</label>
@@ -79,6 +118,10 @@
                     <label for="login-remember" class="form__label form__label--inline">Remember me</label>
                 </div>
 
+                <?php if ($error): ?>
+                    <p class="form__error"><?= e($error) ?></p>
+                <?php endif; ?>
+
                 <button type="submit" class="button button--primary button--block">Sign In</button>
 
             </form>
@@ -109,7 +152,7 @@
                     <ul>
                         <li><a href="classes.html">Classes</a></li>
                         <li><a href="index.html#memberships">Memberships</a></li>
-                        <li><a href="login.html">Join Now</a></li>
+                        <li><a href="login.php">Join Now</a></li>
                     </ul>
                 </div>
                 <div class="site-footer__col">
