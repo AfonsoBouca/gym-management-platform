@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <header class="site-header">
         <div class="site-header__inner">
-            <a href="index.html" class="brand" aria-label="Fitness Down — home">
+            <a href="index.php" class="brand" aria-label="Fitness Down — home">
                 <span class="brand__mark">FITNESS DOWN</span>
             </a>
 
@@ -64,12 +64,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <nav class="primary-nav" aria-label="Primary">
                 <ul class="primary-nav__list">
-                    <li><a href="classes.html" class="primary-nav__link">Classes</a></li>
+                    <li><a href="classes.php" class="primary-nav__link">Classes</a></li>
                     <li><a href="login.php" class="primary-nav__link" aria-current="page">Login</a></li>
                 </ul>
             </nav>
 
-            <a href="index.html#enroll" class="button button--primary">Join Now</a>
+            <a href="index.php#enroll" class="button button--primary">Join Now</a>
         </div>
     </header>
 
@@ -150,8 +150,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="site-footer__col">
                     <h2 class="site-footer__heading">Gym</h2>
                     <ul>
-                        <li><a href="classes.html">Classes</a></li>
-                        <li><a href="index.html#memberships">Memberships</a></li>
+                        <li><a href="classes.php">Classes</a></li>
+                        <li><a href="index.php#memberships">Memberships</a></li>
                         <li><a href="login.php">Join Now</a></li>
                     </ul>
                 </div>
