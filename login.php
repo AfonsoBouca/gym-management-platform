@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/php/includes/auth.php';
 
 if (!empty($_SESSION['user_id'])) {
     redirect_by_role($_SESSION['role']);
