@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
  
-define('DB_PATH', __DIR__ . '/../database/gym.db');
+define('DB_PATH', __DIR__ . '/../../database/gym.db');
  
 function get_db(): PDO {
     static $pdo = null;

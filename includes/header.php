@@ -17,6 +17,9 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
     <?php if (isset($extra_css)): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($extra_css) ?>">
     <?php endif; ?>
+    <?php if (isset($extra_js)): ?>
+        <script src="<?= htmlspecialchars($extra_js) ?>" defer></script>
+    <?php endif; ?>
 </head>
 
 <body>
