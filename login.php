@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <p class="auth__footer-text">
-                Don't have an account? <a href="#" class="form__link form__link--accent">Create one</a>
+                Don't have an account? <a href="/register.php" class="form__link form__link--accent">Create one</a>
             </p>
 
         </section>

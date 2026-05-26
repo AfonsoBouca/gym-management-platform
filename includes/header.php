@@ -1,5 +1,7 @@
 <?php
+require_once __DIR__ . '/../php/includes/auth.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
+try_remember_login();
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
 ?>
 <!DOCTYPE html>

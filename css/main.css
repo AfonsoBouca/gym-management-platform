@@ -15,4 +15,5 @@
 
 @import url("pages/home.css") layer(pages);
 @import url("pages/auth.css") layer(pages);
+@import url("pages/profile.css") layer(pages);
 @import url("pages/classes.css") layer(pages);

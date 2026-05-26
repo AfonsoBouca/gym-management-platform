@@ -62,7 +62,7 @@ function try_remember_login(): void {
  
     $token_hash = hash('sha256', $_COOKIE[REMEMBER_COOKIE]);
     $stmt = get_db()->prepare(
-        "SELECT rt.user_id, rt.expires_at, u.role, u.is_active
+        "SELECT rt.user_id, rt.expires_at, u.role, u.is_active, u.name
            FROM remember_me_tokens rt
            JOIN users u ON u.id = rt.user_id
           WHERE rt.token_hash = :th"
@@ -74,6 +74,7 @@ function try_remember_login(): void {
         session_regenerate_id(true);
         $_SESSION['user_id'] = $row['user_id'];
         $_SESSION['role']    = $row['role'];
+        $_SESSION['user_name'] = $row['name'];
     } else {
         clear_remember_cookie();
     }
