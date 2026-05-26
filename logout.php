@@ -1,11 +1,7 @@
 <?php
 declare(strict_types=1);
 
-<<<<<<< HEAD
 require_once __DIR__ . '/includes/auth.php';
-=======
-require_once __DIR__ . '/php/includes/auth.php';
->>>>>>> baseReq
 
 clear_remember_cookie();
 
