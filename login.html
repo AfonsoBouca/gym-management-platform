@@ -1,3 +1,43 @@
+<<<<<<< Updated upstream:login.html
+=======
+<?php
+require_once __DIR__ . '/includes/auth.php';
+
+if (!empty($_SESSION['user_id'])) {
+    redirect_by_role($_SESSION['role']);
+}
+
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    if (!csrf_verify($_POST['csrf_token'] ?? '')) {
+        $error = 'Invalid request.';
+    } else {
+        $pdo  = get_db();
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = 1");
+        $stmt->execute([$_POST['email'] ?? '']);
+        $user = $stmt->fetch();
+
+        if (!$user || !password_verify($_POST['password'] ?? '', $user['password_hash'])) {
+            $error = 'Invalid email or password.';
+        } else {
+            session_regenerate_id(true);
+            $_SESSION['user_id']   = $user['id'];
+            $_SESSION['role']      = $user['role'];
+            $_SESSION['user_name'] = $user['name'];
+
+            if (!empty($_POST['remember'])) {
+                set_remember_cookie($user['id']);
+            }
+
+            redirect_by_role($user['role']);
+        }
+    }
+}
+?>
+
+>>>>>>> Stashed changes:login.php
 <!DOCTYPE html>
 <html lang="en" class="page-auth">
 
