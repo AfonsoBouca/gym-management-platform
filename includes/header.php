@@ -1,5 +1,10 @@
 <?php
+<<<<<<< HEAD
 require_once __DIR__ . '/auth.php';
+=======
+require_once __DIR__ . '/../php/includes/auth.php';
+if (session_status() === PHP_SESSION_NONE) session_start();
+>>>>>>> baseReq
 try_remember_login();
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
 ?>
@@ -17,6 +22,9 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
     <link rel="stylesheet" href="/css/main.css">
     <?php if (isset($extra_css)): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($extra_css) ?>">
+    <?php endif; ?>
+    <?php if (isset($extra_js)): ?>
+        <script src="<?= htmlspecialchars($extra_js) ?>" defer></script>
     <?php endif; ?>
 </head>
 
