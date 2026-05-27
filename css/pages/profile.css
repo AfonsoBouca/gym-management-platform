@@ -113,6 +113,12 @@
     gap: 1.5rem;
 }
 
+.profile-form textarea.form__input {
+    resize: vertical;
+    min-height: 6rem;
+    font-size: 0.95rem;
+}
+
 .profile-form__row {
     display: grid;
     gap: 1.5rem;

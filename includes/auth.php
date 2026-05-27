@@ -86,7 +86,7 @@ function try_remember_login(): void {
 function redirect_by_role(string $role): void {
     $dest = match($role) {
         'admin'   => '/admin/dashboard.php',
-        'trainer' => '/trainer/dashboard.php',
+        'trainer' => '/profile.php',
         default   => '/profile.php',
     };
     header("Location: $dest");

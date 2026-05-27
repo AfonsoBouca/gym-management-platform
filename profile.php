@@ -18,6 +18,23 @@ if (!$user) {
     exit;
 }
 
+// ── trainer profile (loaded for role=trainer) ─────────────────────
+$trainer_profile = ['bio' => '', 'specializations' => '', 'certifications' => ''];
+if (($_SESSION['role'] ?? '') === 'trainer') {
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS trainer_profiles (
+            user_id INTEGER PRIMARY KEY,
+            bio TEXT,
+            specializations TEXT,
+            certifications TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ");
+    $stmt = $pdo->prepare('SELECT bio, specializations, certifications FROM trainer_profiles WHERE user_id = ?');
+    $stmt->execute([$user_id]);
+    $trainer_profile = $stmt->fetch() ?: $trainer_profile;
+}
+
 $errors = [];
 $success = '';
 
@@ -120,6 +137,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['username']  = $username;
         $success = 'Your profile has been updated successfully.';
 
+        // ── save trainer profile fields if trainer ────────────────
+        if (($_SESSION['role'] ?? '') === 'trainer') {
+            $bio             = trim($_POST['bio'] ?? '');
+            $specializations = trim($_POST['specializations'] ?? '');
+            $certifications  = trim($_POST['certifications'] ?? '');
+
+            $pdo->prepare("
+                INSERT INTO trainer_profiles (user_id, bio, specializations, certifications)
+                VALUES (:uid, :bio, :spec, :cert)
+                ON CONFLICT (user_id) DO UPDATE
+                    SET bio             = excluded.bio,
+                        specializations = excluded.specializations,
+                        certifications  = excluded.certifications
+            ")->execute([
+                ':uid'  => $user_id,
+                ':bio'  => $bio ?: null,
+                ':spec' => $specializations ?: null,
+                ':cert' => $certifications ?: null,
+            ]);
+
+            $trainer_profile = [
+                'bio'             => $bio,
+                'specializations' => $specializations,
+                'certifications'  => $certifications,
+            ];
+        }
+
         $stmt = $pdo->prepare('SELECT id, name, email, username, profile_photo FROM users WHERE id = ?');
         $stmt->execute([$user_id]);
         $user = $stmt->fetch();
@@ -192,6 +236,18 @@ include __DIR__ . '/includes/header.php';
             </div>
         </div>
     </section>
+
+    <?php if (($_SESSION['role'] ?? '') === 'trainer'): ?>
+    <section class="profile-enrollments">
+        <div class="profile-form-card">
+            <header class="profile-form-card__header">
+                <h2>Trainer Dashboard</h2>
+                <p>View your class schedule and enrolled member rosters.</p>
+            </header>
+            <a href="/trainer/dashboard.php" class="button button--ghost" style="margin-top:1rem;">Open Dashboard →</a>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
     <section class="profile-enrollments">
@@ -371,6 +427,29 @@ include __DIR__ . '/includes/header.php';
                         <input type="password" id="password-confirm" name="password_confirm" class="form__input" placeholder="Confirm new password" autocomplete="new-password">
                     </div>
                 </div>
+
+                <?php if (($_SESSION['role'] ?? '') === 'trainer'): ?>
+                <div class="form__group">
+                    <label for="trainer-bio" class="form__label">Bio</label>
+                    <textarea id="trainer-bio" name="bio" class="form__input"
+                              placeholder="Tell members about yourself…" rows="4"><?= e($trainer_profile['bio'] ?? '') ?></textarea>
+                </div>
+
+                <div class="profile-form__row">
+                    <div class="form__group">
+                        <label for="trainer-specializations" class="form__label">Specializations</label>
+                        <input type="text" id="trainer-specializations" name="specializations" class="form__input"
+                               value="<?= e($trainer_profile['specializations'] ?? '') ?>"
+                               placeholder="e.g. Muay Thai, Kickboxing, Self-defense">
+                    </div>
+                    <div class="form__group">
+                        <label for="trainer-certifications" class="form__label">Certifications</label>
+                        <input type="text" id="trainer-certifications" name="certifications" class="form__input"
+                               value="<?= e($trainer_profile['certifications'] ?? '') ?>"
+                               placeholder="e.g. ACE Personal Trainer, Level 3 Instructor">
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <button type="submit" class="button button--primary button--block">Save changes</button>
             </form>

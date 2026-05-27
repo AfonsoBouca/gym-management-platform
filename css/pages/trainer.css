@@ -1,0 +1,341 @@
+/* ═══════════════════════════════════════════════════════════════════
+   TRAINER DASHBOARD
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── layout ──────────────────────────────────────────────────────── */
+.trainer-dashboard {
+    padding: 4rem 1.5rem 6rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    gap: 2.5rem;
+}
+
+.trainer-section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 2rem;
+}
+
+.trainer-section__header {
+    margin-bottom: 1.5rem;
+}
+
+.trainer-section__header h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1.75rem;
+}
+
+.trainer-section__header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+
+/* ── profile form ────────────────────────────────────────────────── */
+.trainer-profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.trainer-profile-form textarea {
+    resize: vertical;
+    min-height: 6rem;
+}
+
+.trainer-profile-form .form__input {
+    font-size: 0.95rem;
+}
+
+.trainer-profile-notice {
+    padding: 0.85rem 1.15rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.trainer-profile-notice--success {
+    display: block;
+    background: rgba(28, 163, 110, 0.12);
+    border: 1px solid rgba(28, 163, 110, 0.25);
+    color: var(--text);
+}
+
+.trainer-profile-notice--error {
+    display: block;
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    color: var(--text);
+}
+
+
+/* ── schedule table ──────────────────────────────────────────────── */
+.trainer-schedule-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.trainer-schedule {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.trainer-schedule th,
+.trainer-schedule td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.trainer-schedule thead th {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+}
+
+.trainer-schedule tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background-color 150ms;
+}
+
+.trainer-schedule tbody tr:last-child {
+    border-bottom: none;
+}
+
+.trainer-schedule tbody tr:hover {
+    background-color: var(--bg-elevated);
+}
+
+.trainer-schedule .schedule-day {
+    font-weight: 500;
+    color: var(--text);
+    min-width: 6rem;
+}
+
+.trainer-schedule .schedule-class {
+    color: var(--text);
+}
+
+.trainer-schedule .schedule-time {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-soft);
+}
+
+.trainer-schedule .schedule-duration {
+    color: var(--text-muted);
+}
+
+.trainer-schedule .schedule-spots {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+}
+
+.schedule-spots__enrolled {
+    color: var(--text);
+}
+
+.schedule-spots__capacity {
+    color: var(--text-muted);
+}
+
+.trainer-schedule__empty {
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+
+/* ── roster accordion ────────────────────────────────────────────── */
+.trainer-roster-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.trainer-roster-item {
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: border-color 150ms;
+}
+
+.trainer-roster-item:hover {
+    border-color: var(--border-strong);
+}
+
+.trainer-roster-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    text-align: left;
+    transition: background-color 150ms;
+}
+
+.trainer-roster-toggle:hover {
+    background-color: var(--bg-elevated);
+}
+
+.trainer-roster-toggle__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.trainer-roster-toggle__class {
+    font-weight: 500;
+}
+
+.trainer-roster-toggle__meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+}
+
+.trainer-roster-toggle__arrow {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+}
+
+.trainer-roster-item--open .trainer-roster-toggle__arrow {
+    transform: rotate(180deg);
+}
+
+.trainer-roster-panel {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    background: var(--bg-elevated);
+}
+
+.trainer-roster-item--open .trainer-roster-panel {
+    display: block;
+}
+
+.trainer-roster-panel__loading {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.trainer-roster-members {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.trainer-roster-member {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.trainer-roster-member:last-child {
+    border-bottom: none;
+}
+
+.trainer-roster-member__name {
+    font-weight: 500;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.trainer-roster-member__user {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+}
+
+.trainer-roster-member__date {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.trainer-roster-member__status {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2rem;
+}
+
+.trainer-roster-member__status--yes {
+    background: rgba(46, 160, 67, 0.12);
+    border: 1px solid rgba(46, 160, 67, 0.3);
+    color: #3fb950;
+}
+
+.trainer-roster-member__status--no {
+    background: rgba(139, 148, 158, 0.1);
+    border: 1px solid rgba(139, 148, 158, 0.2);
+    color: var(--text-muted);
+}
+
+.trainer-roster-empty {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.trainer-roster__empty-all {
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+
+/* ── responsive ──────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .trainer-dashboard {
+        padding: 3rem 1rem 4rem;
+    }
+
+    .trainer-section {
+        padding: 1.25rem;
+    }
+
+    .trainer-schedule th,
+    .trainer-schedule td {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.82rem;
+    }
+
+    .trainer-roster-toggle {
+        padding: 0.85rem 1rem;
+    }
+}
+
+@media (min-width: 840px) {
+    .trainer-dashboard {
+        padding-top: 6rem;
+    }
+}
