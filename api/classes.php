@@ -1,10 +1,4 @@
 <?php
-/**
- * api/classes.php
- *
- * Returns all active classes with their sessions as JSON.
- * Used by the front-end for Ajax filtering / schedule data.
- */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: public, max-age=60');
 
@@ -12,7 +6,6 @@ require_once __DIR__ . '/../includes/db.php';
 
 $pdo = get_db();
 
-// ── classes ────────────────────────────────────────────────────────
 $stmt = $pdo->query("
     SELECT c.id, c.name, c.description, c.difficulty,
            c.duration_minutes, c.capacity,
@@ -24,7 +17,6 @@ $stmt = $pdo->query("
 ");
 $classes = $stmt->fetchAll();
 
-// ── sessions ───────────────────────────────────────────────────────
 $stmt = $pdo->query("
     SELECT s.id, s.class_id, s.day_of_week, s.start_time, s.duration_minutes
     FROM sessions s
@@ -44,7 +36,6 @@ $stmt = $pdo->query("
 ");
 $all_sessions = $stmt->fetchAll();
 
-// group sessions under their class
 $sessions_map = [];
 foreach ($all_sessions as $s) {
     $sessions_map[$s['class_id']][] = $s;

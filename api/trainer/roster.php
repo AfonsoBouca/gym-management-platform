@@ -9,7 +9,6 @@ function json_out(bool $ok, string $msg, array $extra = []): never {
     exit;
 }
 
-// ── auth: must be logged-in trainer ────────────────────────────────
 if (empty($_SESSION['user_id'])) {
     http_response_code(401);
     json_out(false, 'Login required.');
@@ -35,7 +34,6 @@ if ($session_id <= 0) {
 $pdo        = get_db();
 $trainer_id = (int)$_SESSION['user_id'];
 
-// ── verify ownership: session → class → trainer_id ────────────────
 $stmt = $pdo->prepare("
     SELECT s.id
     FROM sessions s
@@ -49,7 +47,6 @@ if (!$stmt->fetch()) {
     json_out(false, 'You do not own this session.');
 }
 
-// ── fetch enrolled members ────────────────────────────────────────
 $stmt = $pdo->prepare("
     SELECT u.name, u.username, e.enrolled_at, e.attended
     FROM enrollments e

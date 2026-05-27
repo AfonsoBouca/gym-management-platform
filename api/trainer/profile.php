@@ -9,7 +9,6 @@ function json_out(bool $ok, string $msg): never {
     exit;
 }
 
-// ── auth: must be logged-in trainer ────────────────────────────────
 if (empty($_SESSION['user_id'])) {
     http_response_code(401);
     json_out(false, 'Login required.');
@@ -25,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_out(false, 'Method not allowed.');
 }
 
-// ── CSRF ───────────────────────────────────────────────────────────
 if (!csrf_verify($_POST['csrf_token'] ?? '')) {
     http_response_code(403);
     json_out(false, 'Invalid request.');
@@ -34,7 +32,6 @@ if (!csrf_verify($_POST['csrf_token'] ?? '')) {
 $pdo        = get_db();
 $trainer_id = (int)$_SESSION['user_id'];
 
-// ── ensure trainer_profiles table exists (safe fallback) ──────────
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS trainer_profiles (
         user_id INTEGER PRIMARY KEY,
@@ -45,12 +42,10 @@ $pdo->exec("
     )
 ");
 
-// ── sanitise input ────────────────────────────────────────────────
 $bio             = trim($_POST['bio'] ?? '');
 $specializations = trim($_POST['specializations'] ?? '');
 $certifications  = trim($_POST['certifications'] ?? '');
 
-// ── upsert ────────────────────────────────────────────────────────
 $stmt = $pdo->prepare("
     INSERT INTO trainer_profiles (user_id, bio, specializations, certifications)
     VALUES (:uid, :bio, :spec, :cert)

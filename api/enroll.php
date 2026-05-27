@@ -35,7 +35,6 @@ if ($session_id <= 0 || !in_array($action, ['enroll', 'cancel'], true)) {
 $pdo       = get_db();
 $member_id = (int)$_SESSION['user_id'];
 
-// verify session exists and class is active
 $stmt = $pdo->prepare("
     SELECT s.id, c.capacity, c.is_active
     FROM sessions s
@@ -50,7 +49,6 @@ if (!$sess || !$sess['is_active']) {
     json_out(false, 'Session not found.');
 }
 
-// helper: get current enrolled count for this session
 function enrolled_count(PDO $pdo, int $session_id): int {
     $s = $pdo->prepare("SELECT COUNT(*) FROM enrollments WHERE session_id = ? AND status = 'enrolled'");
     $s->execute([$session_id]);
@@ -68,7 +66,6 @@ if ($action === 'enroll') {
         ]);
     }
 
-    // insert or re-activate a cancelled enrollment
     $pdo->prepare("
         INSERT INTO enrollments (member_id, session_id, status)
         VALUES (?, ?, 'enrolled')
@@ -81,7 +78,7 @@ if ($action === 'enroll') {
         'capacity' => (int)$sess['capacity'],
     ]);
 
-} else { // cancel
+} else {
     $stmt = $pdo->prepare("
         UPDATE enrollments SET status = 'cancelled'
         WHERE member_id = ? AND session_id = ? AND status = 'enrolled'

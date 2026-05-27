@@ -18,7 +18,6 @@ if (!$user) {
     exit;
 }
 
-// ── trainer profile (loaded for role=trainer) ─────────────────────
 $trainer_profile = ['bio' => '', 'specializations' => '', 'certifications' => ''];
 if (($_SESSION['role'] ?? '') === 'trainer') {
     $pdo->exec("
@@ -137,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['username']  = $username;
         $success = 'Your profile has been updated successfully.';
 
-        // ── save trainer profile fields if trainer ────────────────
         if (($_SESSION['role'] ?? '') === 'trainer') {
             $bio             = trim($_POST['bio'] ?? '');
             $specializations = trim($_POST['specializations'] ?? '');
