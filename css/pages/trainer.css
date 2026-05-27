@@ -152,6 +152,146 @@
     margin-top: 0.5rem;
 }
 
+/* ── schedule status badges ──────────────────────────────────────── */
+.schedule-status {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 2rem;
+    white-space: nowrap;
+}
+
+.schedule-status--scheduled {
+    background: rgba(74, 158, 206, 0.12);
+    border: 1px solid rgba(74, 158, 206, 0.3);
+    color: #4a9ece;
+}
+
+.schedule-status--completed {
+    background: rgba(46, 160, 67, 0.12);
+    border: 1px solid rgba(46, 160, 67, 0.3);
+    color: #3fb950;
+}
+
+.schedule-status--cancelled {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    color: #e05a5a;
+}
+
+/* dim non-scheduled rows */
+.schedule-row[data-status="completed"],
+.schedule-row[data-status="cancelled"] {
+    opacity: 0.55;
+}
+
+.schedule-row[data-status="completed"]:hover,
+.schedule-row[data-status="cancelled"]:hover {
+    opacity: 1;
+}
+
+/* ── schedule action buttons ─────────────────────────────────────── */
+.schedule-actions {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.schedule-action-btn {
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms, border-color 150ms;
+}
+
+.schedule-action-btn:hover {
+    background-color: var(--bg-elevated);
+    color: var(--text);
+    border-color: var(--border-strong);
+}
+
+.schedule-action-btn--complete:hover {
+    color: #3fb950;
+    border-color: rgba(46, 160, 67, 0.4);
+}
+
+.schedule-action-btn--cancel:hover {
+    color: #e05a5a;
+    border-color: rgba(220, 38, 38, 0.4);
+}
+
+.schedule-action-btn--reactivate:hover {
+    color: #4a9ece;
+    border-color: rgba(74, 158, 206, 0.4);
+}
+
+.schedule-action-btn--notes:hover {
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.schedule-action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ── schedule notes editor row ───────────────────────────────────── */
+.schedule-notes-row td {
+    padding: 0 1rem 1rem;
+    white-space: normal;
+}
+
+.schedule-notes-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.schedule-notes-input {
+    resize: vertical;
+    min-height: 3.5rem;
+    font-size: 0.88rem;
+}
+
+.schedule-notes-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.schedule-notes-save {
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+}
+
+.schedule-notes-cancel {
+    background: none;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 120ms;
+}
+
+.schedule-notes-cancel:hover {
+    color: var(--text);
+}
 
 /* ── roster accordion ────────────────────────────────────────────── */
 .trainer-roster-list {
