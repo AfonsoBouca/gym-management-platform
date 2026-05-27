@@ -68,6 +68,12 @@ if (!empty($_SESSION['user_id'])) {
     $enrolled_sessions = array_column($stmt->fetchAll(), 'session_id');
 }
 
+$enrollment_counts = [];
+$stmt = $pdo->query("SELECT session_id, COUNT(*) AS cnt FROM enrollments WHERE status = 'enrolled' GROUP BY session_id");
+while ($row = $stmt->fetch()) {
+    $enrollment_counts[$row['session_id']] = (int)$row['cnt'];
+}
+
 // ── maps & helpers ─────────────────────────────────────────────────
 $difficulty_map = [
     'beginner'     => ['class' => 'easy', 'label' => 'All levels'],
@@ -115,6 +121,9 @@ $extra_js         = '/js/classes.js';
 require __DIR__ . '/includes/header.php';
 ?>
 
+<?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+<script>const CSRF_TOKEN = <?= json_encode(csrf_token()) ?>;</script>
+<?php endif; ?>
 <main>
 
     <!-- ── hero ────────────────────────────────────────────────── -->
@@ -235,12 +244,48 @@ require __DIR__ . '/includes/header.php';
                             <?= e($start_time) ?> &nbsp;·&nbsp; <?= $cls['duration_minutes'] ?> min
                         </p>
                     </div>
-                    <button type="button"
-                            class="button button--ghost crow__book-btn"
-                            data-class-id="<?= $cls['id'] ?>"
-                            aria-label="View <?= e($cls['name']) ?> schedule">
-                        View Schedule
-                    </button>
+                    <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+                        <div class="crow__sessions">
+                            <?php foreach ($cls_sessions as $sess):
+                                $sess_id    = (int)$sess['id'];
+                                $is_enrolled = in_array($sess_id, $enrolled_sessions, true);
+                                $count      = $enrollment_counts[$sess_id] ?? 0;
+                                $capacity   = (int)$cls['capacity'];
+                                $free       = $capacity - $count;
+                            ?>
+                            <div class="crow__session-row">
+                                <div class="crow__session-info">
+                                    <span class="crow__session-day"><?= e($day_abbr[$sess['day_of_week']] ?? $sess['day_of_week']) ?></span>
+                                    <span class="crow__session-time"><?= e($sess['start_time']) ?></span>
+                                </div>
+                                <span class="crow__spots <?= $free <= 0 && !$is_enrolled ? 'crow__spots--full' : '' ?>">
+                                    <?php if ($is_enrolled): ?>Enrolled
+                                    <?php elseif ($free <= 0): ?>Full
+                                    <?php else: ?><?= $free ?> spot<?= $free === 1 ? '' : 's' ?> left
+                                    <?php endif; ?>
+                                </span>
+                                <button type="button"
+                                        class="button button--ghost crow__enroll-btn <?= $is_enrolled ? 'crow__enroll-btn--enrolled' : '' ?>"
+                                        data-session-id="<?= $sess_id ?>"
+                                        data-enrolled="<?= $is_enrolled ? '1' : '0' ?>"
+                                        <?= ($free <= 0 && !$is_enrolled) ? 'disabled' : '' ?>>
+                                    <?= $is_enrolled ? 'Cancel' : 'Enroll' ?>
+                                </button>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php elseif (!isset($_SESSION['user_id'])): ?>
+                        <div class="crow__login-prompt">
+                            <a href="/login.php">Login to enroll</a>
+                        </div>
+                    <?php else: ?>
+                        <button type="button"
+                                class="button button--ghost crow__book-btn"
+                                data-class-id="<?= $cls['id'] ?>"
+                                aria-label="View <?= e($cls['name']) ?> schedule">
+                            View Schedule
+                        </button>
+                    <?php endif; ?>
                 </article>
                 <?php endforeach; ?>
             </div>

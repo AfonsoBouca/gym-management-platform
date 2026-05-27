@@ -185,6 +185,194 @@
     font-size: 0.9rem;
 }
 
+.profile-enrollments__empty {
+    margin-top: 1.25rem;
+    color: var(--text-muted);
+}
+
+.profile-enrollments__empty a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.profile-enrollment-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.25rem 0 0;
+}
+
+.profile-enrollment-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--border);
+}
+
+.profile-enrollment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-enrollment-name {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.profile-enrollment-meta {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.profile-enrollment-cancel {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.profile-review-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.25rem 0 0;
+}
+
+.profile-review-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+}
+
+.profile-review-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.profile-review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.star-rating {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.star {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 120ms, transform 120ms;
+    line-height: 1;
+}
+
+.star--on,
+.star:hover {
+    color: #f59e0b;
+}
+
+.star:hover ~ .star {
+    color: var(--text-muted);
+}
+
+.profile-review-textarea {
+    resize: vertical;
+    min-height: 4rem;
+    font-size: 0.9rem;
+}
+
+.profile-review-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.profile-review-submit {
+    align-self: flex-start;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.78rem;
+}
+
+.profile-review-comment {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    margin: 0;
+}
+
+.profile-review-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.profile-review-edit-btn {
+    background: none;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    cursor: pointer;
+    align-self: flex-start;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 120ms;
+}
+
+.profile-review-edit-btn:hover {
+    color: var(--text);
+}
+
+.profile-review-delete-btn {
+    background: none;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #c0392b;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 120ms;
+}
+
+.profile-review-delete-btn:hover {
+    opacity: 0.7;
+}
+
+.profile-review-cancel-edit-btn {
+    background: none;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 120ms;
+}
+
+.profile-review-cancel-edit-btn:hover {
+    color: var(--text);
+}
+
 @media (max-width: 600px) {
     .profile-form__row {
         grid-template-columns: 1fr;

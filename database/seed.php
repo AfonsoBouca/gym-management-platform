@@ -205,6 +205,34 @@ foreach ($plans as $p) {
 }
 echo "Inserted " . count($plans) . " membership plans.\n";
 
+// ── enrollments for test member (João Silva, user id 8) ───────────
+// sessions: 1=Muay Thai Mon, 4=Hyrox Mon, 6=Pilates Tue, 9=Boxing Mon, 12=Stretching Mon, 19=Yoga Wed
+$insertEnrollment = $pdo->prepare(
+    "INSERT INTO enrollments (member_id, session_id, status, attended)
+     VALUES (:mid, :sid, :status, :attended)"
+);
+
+$enrollments = [
+    // attended (can leave reviews)
+    [8, 1,  'enrolled', 1],  // Muay Thai Monday
+    [8, 4,  'enrolled', 1],  // Hyrox Monday
+    [8, 6,  'enrolled', 1],  // Pilates Tuesday
+    // enrolled but not yet attended
+    [8, 9,  'enrolled', 0],  // Boxing Monday
+    [8, 19, 'enrolled', 0],  // Yoga Wednesday
+];
+
+foreach ($enrollments as $e) {
+    $insertEnrollment->execute([
+        ':mid'      => $e[0],
+        ':sid'      => $e[1],
+        ':status'   => $e[2],
+        ':attended' => $e[3],
+    ]);
+}
+echo "Inserted " . count($enrollments) . " enrollments for test member.\n";
+
 // ── done ───────────────────────────────────────────────────────────
 echo "\n✔  gym.db created successfully at: $dbPath\n";
 echo "   Users password: password123\n";
+echo "   Test member:    joao@test.pt / password123\n";

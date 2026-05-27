@@ -13,6 +13,7 @@ $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
 if (!$user) {
+    session_destroy();
     header('Location: /login.php');
     exit;
 }
@@ -83,11 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $extension = $allowed[$mime_type];
                     $filename = sprintf('user-%d-%s.%s', $user_id, bin2hex(random_bytes(8)), $extension);
-                    $destination = $upload_dir . '/' . $filename;
+                    $destination = "$upload_dir/$filename";
                     if (!move_uploaded_file($_FILES['profile_photo']['tmp_name'], $destination)) {
                         $errors[] = 'Unable to save uploaded photo.';
                     } else {
-                        $photo_path = '/assets/images/profiles/' . $filename;
+                        $photo_path = "/assets/images/profiles/$filename";
                         if ($profile_photo && str_starts_with($profile_photo, '/assets/images/profiles/')) {
                             $old_file = __DIR__ . $profile_photo;
                             if (is_file($old_file)) {
@@ -116,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute($fields);
 
         $_SESSION['user_name'] = $name;
+        $_SESSION['username']  = $username;
         $success = 'Your profile has been updated successfully.';
 
         $stmt = $pdo->prepare('SELECT id, name, email, username, profile_photo FROM users WHERE id = ?');
@@ -123,6 +125,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
         $profile_photo = $user['profile_photo'];
     }
+}
+
+$attended_sessions = [];
+$enrolled_sessions = [];
+if (($_SESSION['role'] ?? '') === 'member') {
+    $stmt = $pdo->prepare("
+        SELECT e.id AS enrollment_id, c.name AS class_name, s.day_of_week, s.start_time,
+               u.name AS trainer_name, r.rating, r.comment
+        FROM enrollments e
+        JOIN sessions s ON s.id = e.session_id
+        JOIN classes c ON c.id = s.class_id
+        JOIN users u ON u.id = c.trainer_id
+        LEFT JOIN reviews r ON r.enrollment_id = e.id
+        WHERE e.member_id = ? AND e.attended = 1
+        ORDER BY e.enrolled_at DESC
+    ");
+    $stmt->execute([$user_id]);
+    $attended_sessions = $stmt->fetchAll();
+}
+
+if (($_SESSION['role'] ?? '') === 'member') {
+    $stmt = $pdo->prepare("
+        SELECT e.session_id, c.name AS class_name, s.day_of_week, s.start_time,
+               s.duration_minutes, u.name AS trainer_name, c.id AS class_id
+        FROM enrollments e
+        JOIN sessions s ON s.id = e.session_id
+        JOIN classes c ON c.id = s.class_id
+        JOIN users u ON u.id = c.trainer_id
+        WHERE e.member_id = ? AND e.status = 'enrolled'
+        ORDER BY CASE s.day_of_week
+            WHEN 'monday'    THEN 1 WHEN 'tuesday'  THEN 2 WHEN 'wednesday' THEN 3
+            WHEN 'thursday'  THEN 4 WHEN 'friday'   THEN 5 WHEN 'saturday'  THEN 6
+            WHEN 'sunday'    THEN 7 END, s.start_time
+    ");
+    $stmt->execute([$user_id]);
+    $enrolled_sessions = $stmt->fetchAll();
 }
 
 $page_title = 'My Profile — Fitness Down';
@@ -154,6 +192,132 @@ include __DIR__ . '/includes/header.php';
             </div>
         </div>
     </section>
+
+    <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+    <section class="profile-enrollments">
+        <div class="profile-form-card">
+            <header class="profile-form-card__header">
+                <h2>My classes</h2>
+                <p>Sessions you're currently enrolled in.</p>
+            </header>
+            <?php if (empty($enrolled_sessions)): ?>
+                <p class="profile-enrollments__empty">
+                    You're not enrolled in any sessions yet. <a href="/classes.php">Browse classes</a>
+                </p>
+            <?php else: ?>
+                <ul class="profile-enrollment-list">
+                    <?php
+                    $day_label = [
+                        'monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday',
+                        'thursday' => 'Thursday', 'friday' => 'Friday', 'saturday' => 'Saturday', 'sunday' => 'Sunday',
+                    ];
+                    foreach ($enrolled_sessions as $enr): ?>
+                    <li class="profile-enrollment-row" data-session-id="<?= $enr['session_id'] ?>">
+                        <div class="profile-enrollment-info">
+                            <span class="profile-enrollment-name"><?= e($enr['class_name']) ?></span>
+                            <span class="profile-enrollment-meta">
+                                <?= e($day_label[$enr['day_of_week']] ?? $enr['day_of_week']) ?>
+                                · <?= e($enr['start_time']) ?>
+                                · <?= $enr['duration_minutes'] ?> min
+                                · <?= e($enr['trainer_name']) ?>
+                            </span>
+                        </div>
+                        <button type="button"
+                                class="button button--danger profile-enrollment-cancel"
+                                data-session-id="<?= $enr['session_id'] ?>"
+                                data-name="<?= e($enr['class_name']) ?>">
+                            Cancel
+                        </button>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+    </section>
+    <script>const CSRF_TOKEN = <?= json_encode(csrf_token()) ?>;</script>
+
+    <?php if (!empty($attended_sessions)): ?>
+    <section class="profile-reviews">
+        <div class="profile-form-card">
+            <header class="profile-form-card__header">
+                <h2>Reviews</h2>
+                <p>Rate the classes you attended.</p>
+            </header>
+            <ul class="profile-review-list">
+                <?php
+                $day_label_r = [
+                    'monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday',
+                    'thursday' => 'Thursday', 'friday' => 'Friday', 'saturday' => 'Saturday', 'sunday' => 'Sunday',
+                ];
+                foreach ($attended_sessions as $att):
+                    $reviewed = $att['rating'] !== null;
+                ?>
+                <li class="profile-review-row" data-enrollment-id="<?= $att['enrollment_id'] ?>">
+                    <div class="profile-review-info">
+                        <span class="profile-enrollment-name"><?= e($att['class_name']) ?></span>
+                        <span class="profile-enrollment-meta">
+                            <?= e($day_label_r[$att['day_of_week']] ?? $att['day_of_week']) ?>
+                            · <?= e($att['start_time']) ?>
+                            · <?= e($att['trainer_name']) ?>
+                        </span>
+                    </div>
+                    <div class="profile-review-form">
+                        <?php if ($reviewed): ?>
+                        <div class="profile-review-display">
+                            <div class="star-rating star-rating--readonly" data-current="<?= (int)$att['rating'] ?>">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <span class="star <?= $i <= (int)$att['rating'] ? 'star--on' : '' ?>"
+                                      data-value="<?= $i ?>">★</span>
+                                <?php endfor; ?>
+                            </div>
+                            <?php if ($att['comment']): ?>
+                                <p class="profile-review-comment"><?= e($att['comment']) ?></p>
+                            <?php endif; ?>
+                            <div class="profile-review-actions">
+                                <button type="button" class="profile-review-edit-btn">Edit</button>
+                                <button type="button" class="profile-review-delete-btn"
+                                        data-enrollment-id="<?= $att['enrollment_id'] ?>">Clear</button>
+                            </div>
+                        </div>
+                        <div class="profile-review-editor" style="display:none">
+                            <div class="star-rating" data-current="<?= (int)$att['rating'] ?>">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <span class="star <?= $i <= (int)$att['rating'] ? 'star--on' : '' ?>"
+                                      data-value="<?= $i ?>">★</span>
+                                <?php endfor; ?>
+                            </div>
+                            <textarea class="form__input profile-review-textarea"
+                                      placeholder="Comment (optional)" rows="2"><?= e($att['comment'] ?? '') ?></textarea>
+                            <div class="profile-review-actions">
+                                <button type="button" class="button button--primary profile-review-submit"
+                                        data-enrollment-id="<?= $att['enrollment_id'] ?>">Update</button>
+                                <button type="button" class="profile-review-cancel-edit-btn">Cancel</button>
+                            </div>
+                        </div>
+                        <?php else: ?>
+                        <div class="profile-review-editor">
+                            <div class="star-rating" data-current="0">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <span class="star" data-value="<?= $i ?>">★</span>
+                                <?php endfor; ?>
+                            </div>
+                            <textarea class="form__input profile-review-textarea"
+                                      placeholder="Comment (optional)" rows="2"></textarea>
+                            <div class="profile-review-actions">
+                                <button type="button" class="button button--primary profile-review-submit"
+                                        data-enrollment-id="<?= $att['enrollment_id'] ?>">Submit</button>
+                                <button type="button" class="profile-review-dismiss">Dismiss</button>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    </section>
+    <?php endif; ?>
+    <?php endif; ?>
 
     <section class="profile-page__form">
         <div class="profile-form-card">

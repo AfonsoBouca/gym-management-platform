@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 function get_db(): PDO {
     static $pdo = null;
     if ($pdo === null) {

@@ -149,10 +149,61 @@ bookBtns.forEach(btn => {
 // clicking the card itself (not the button) also opens timetable
 cards.forEach(card => {
     card.addEventListener('click', (e) => {
-        // don't trigger if they clicked the button (button has its own handler)
-        if (e.target.closest('.crow__book-btn')) return;
+        if (e.target.closest('.crow__book-btn') || e.target.closest('.crow__enroll-btn') || e.target.closest('.crow__login-prompt')) return;
         const classId = card.dataset.classId;
         switchView('timetable');
         highlightClass(classId);
     });
+});
+
+
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.crow__enroll-btn');
+    if (!btn || btn.disabled) return;
+    e.stopPropagation();
+
+    const sessionId  = btn.dataset.sessionId;
+    const isEnrolled = btn.dataset.enrolled === '1';
+    const action     = isEnrolled ? 'cancel' : 'enroll';
+
+    btn.disabled = true;
+
+    const body = new FormData();
+    body.append('csrf_token', typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : '');
+    body.append('session_id', sessionId);
+    body.append('action', action);
+
+    fetch('/api/enroll.php', { method: 'POST', body })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.ok) {
+                alert(data.msg);
+                btn.disabled = false;
+                return;
+            }
+
+            const nowEnrolled = data.enrolled;
+            btn.dataset.enrolled = nowEnrolled ? '1' : '0';
+            btn.textContent = nowEnrolled ? 'Cancel' : 'Enroll';
+            btn.classList.toggle('crow__enroll-btn--enrolled', nowEnrolled);
+
+            const row     = btn.closest('.crow__session-row');
+            const spotsEl = row?.querySelector('.crow__spots');
+            if (spotsEl && data.capacity != null) {
+                const free = data.capacity - data.count;
+                if (nowEnrolled) {
+                    spotsEl.textContent = 'Enrolled';
+                    spotsEl.classList.remove('crow__spots--full');
+                } else if (free <= 0) {
+                    spotsEl.textContent = 'Full';
+                    spotsEl.classList.add('crow__spots--full');
+                } else {
+                    spotsEl.textContent = `${free} spot${free === 1 ? '' : 's'} left`;
+                    spotsEl.classList.remove('crow__spots--full');
+                }
+            }
+
+            btn.disabled = nowEnrolled ? false : (data.count >= data.capacity);
+        })
+        .catch(() => { btn.disabled = false; });
 });

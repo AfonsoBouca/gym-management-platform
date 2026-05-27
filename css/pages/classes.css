@@ -483,6 +483,98 @@
 }
 
 
+.crow__sessions {
+    padding: 0 1.5rem 1.5rem;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.crow__session-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-top: 1px solid var(--border);
+}
+
+.crow__session-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.crow__session-day {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text);
+}
+
+.crow__session-time {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.crow__spots {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.crow__spots--full {
+    color: #c0392b;
+}
+
+.crow__enroll-btn {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.72rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.crow__enroll-btn--enrolled {
+    color: #c0392b;
+    border-color: #c0392b;
+}
+
+.crow__enroll-btn--enrolled:hover {
+    background-color: #c0392b;
+    color: var(--text);
+}
+
+.crow__enroll-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.crow__login-prompt {
+    padding: 0.75rem 1.5rem 1.5rem;
+    text-align: center;
+}
+
+.crow__login-prompt a {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 150ms;
+}
+
+.crow__login-prompt a:hover {
+    color: var(--text);
+}
+
+
 /* ── crow card interactive cursor ───────────────────────────────── */
 
 .crow {
