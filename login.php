@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/php/includes/auth.php';
+require_once __DIR__ . '/includes/auth.php';
 
 if (!empty($_SESSION['user_id'])) {
     redirect_by_role($_SESSION['role']);
@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id']   = $user['id'];
             $_SESSION['role']      = $user['role'];
             $_SESSION['user_name'] = $user['name'];
+            $_SESSION['username']  = $user['username'];
 
             if (!empty($_POST['remember'])) {
                 set_remember_cookie($user['id']);

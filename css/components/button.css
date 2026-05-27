@@ -64,3 +64,14 @@
     display: flex;
     width: 100%;
 }
+
+.button--danger {
+    background-color: transparent;
+    color: #c0392b;
+    border-color: #c0392b;
+}
+
+.button--danger:hover {
+    background-color: #c0392b;
+    color: var(--text);
+}

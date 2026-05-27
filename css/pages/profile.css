@@ -65,8 +65,58 @@
     color: var(--text-muted);
 }
 
+.profile-role-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 2rem;
+    margin-bottom: 0.6rem;
+}
+
+.profile-role-badge--member {
+    background: rgba(74, 158, 206, 0.1);
+    border: 1px solid rgba(74, 158, 206, 0.3);
+    color: #4a9ece;
+}
+
+.profile-role-badge--trainer {
+    background: rgba(46, 160, 67, 0.1);
+    border: 1px solid rgba(46, 160, 67, 0.3);
+    color: #3fb950;
+}
+
+.profile-role-badge--admin {
+    background: rgba(139, 0, 0, 0.15);
+    border: 1px solid rgba(139, 0, 0, 0.4);
+    color: #e05a5a;
+}
+
+.profile-logout {
+    display: flex;
+    justify-content: center;
+    padding-top: 1.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border);
+}
+
 .profile-page__form {
     display: grid;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.profile-form__row {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr 1fr;
 }
 
 .profile-form-card {
@@ -135,13 +185,14 @@
     font-size: 0.9rem;
 }
 
+@media (max-width: 600px) {
+    .profile-form__row {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (min-width: 840px) {
     .profile-page {
         padding-top: 6rem;
-    }
-
-    .profile-page__hero {
-        grid-template-columns: 320px 1fr;
-        align-items: start;
     }
 }

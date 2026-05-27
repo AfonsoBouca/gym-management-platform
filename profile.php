@@ -134,17 +134,20 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <main class="profile-page">
+
     <section class="profile-page__hero">
-        <div class="profile-card profile-card--summary">
-            <div class="profile-avatar <?= $profile_photo ? 'profile-avatar--image' : 'profile-avatar--fallback' ?>">
+        <div class="profile-card">
+            <div class="profile-avatar <?= $profile_photo ? 'profile-avatar--image' : 'profile-avatar--initials' ?>">
                 <?php if ($profile_photo): ?>
-                    <img src="<?= e($profile_photo) ?>" alt="<?= e($user['name']) ?> profile photo">
+                    <img src="<?= e($profile_photo) ?>" alt="<?= e($user['name']) ?>">
                 <?php else: ?>
-                    <span><?= e(implode('', array_map(fn($part) => strtoupper($part[0] ?? ''), explode(' ', $user['name']))) ?: 'U') ?></span>
+                    <span><?= e(implode('', array_map(fn($p) => strtoupper($p[0] ?? ''), explode(' ', $user['name']))) ?: 'U') ?></span>
                 <?php endif; ?>
             </div>
             <div class="profile-card__body">
-                <p class="profile-card__label">Account</p>
+                <span class="profile-role-badge profile-role-badge--<?= e($_SESSION['role'] ?? 'member') ?>">
+                    <?= e(ucfirst($_SESSION['role'] ?? 'member')) ?>
+                </span>
                 <h1 class="profile-card__title"><?= e($user['name']) ?></h1>
                 <p class="profile-card__meta">@<?= e($user['username']) ?></p>
                 <p class="profile-card__email"><?= e($user['email']) ?></p>
@@ -155,8 +158,8 @@ include __DIR__ . '/includes/header.php';
     <section class="profile-page__form">
         <div class="profile-form-card">
             <header class="profile-form-card__header">
-                <h2>Update your profile</h2>
-                <p>Change your name, username, password, or upload a new photo.</p>
+                <h2>Edit your profile</h2>
+                <p>Update your name, username, password, or profile photo.</p>
             </header>
 
             <?php if ($success): ?>
@@ -173,17 +176,18 @@ include __DIR__ . '/includes/header.php';
                 </div>
             <?php endif; ?>
 
-            <form class="form" action="/profile.php" method="post" enctype="multipart/form-data" novalidate>
+            <form class="profile-form" action="/profile.php" method="post" enctype="multipart/form-data" novalidate>
                 <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 
-                <div class="form__group">
-                    <label for="name" class="form__label">Full name</label>
-                    <input type="text" id="name" name="name" class="form__input" value="<?= e($name) ?>" required>
-                </div>
-
-                <div class="form__group">
-                    <label for="username" class="form__label">Username</label>
-                    <input type="text" id="username" name="username" class="form__input" value="<?= e($username) ?>" required>
+                <div class="profile-form__row">
+                    <div class="form__group">
+                        <label for="name" class="form__label">Full name</label>
+                        <input type="text" id="name" name="name" class="form__input" value="<?= e($name) ?>" required>
+                    </div>
+                    <div class="form__group">
+                        <label for="username" class="form__label">Username</label>
+                        <input type="text" id="username" name="username" class="form__input" value="<?= e($username) ?>" required>
+                    </div>
                 </div>
 
                 <div class="form__group">
@@ -193,20 +197,26 @@ include __DIR__ . '/includes/header.php';
                     <div id="photo-preview" class="profile-photo-preview" aria-live="polite"></div>
                 </div>
 
-                <div class="form__group">
-                    <label for="password" class="form__label">New password</label>
-                    <input type="password" id="password" name="password" class="form__input" placeholder="Leave blank to keep current password" autocomplete="new-password">
-                </div>
-
-                <div class="form__group">
-                    <label for="password-confirm" class="form__label">Confirm password</label>
-                    <input type="password" id="password-confirm" name="password_confirm" class="form__input" placeholder="Confirm new password" autocomplete="new-password">
+                <div class="profile-form__row">
+                    <div class="form__group">
+                        <label for="password" class="form__label">New password</label>
+                        <input type="password" id="password" name="password" class="form__input" placeholder="Leave blank to keep current password" autocomplete="new-password">
+                    </div>
+                    <div class="form__group">
+                        <label for="password-confirm" class="form__label">Confirm password</label>
+                        <input type="password" id="password-confirm" name="password_confirm" class="form__input" placeholder="Confirm new password" autocomplete="new-password">
+                    </div>
                 </div>
 
                 <button type="submit" class="button button--primary button--block">Save changes</button>
             </form>
         </div>
+
+        <div class="profile-logout">
+            <a href="/logout.php" class="button button--danger">Logout</a>
+        </div>
     </section>
+
 </main>
 
 <?php include __DIR__ . '/includes/footer.php';

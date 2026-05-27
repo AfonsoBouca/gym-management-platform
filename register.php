@@ -66,9 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user_id = (int) $pdo->lastInsertId();
 
         session_regenerate_id(true);
-        $_SESSION['user_id'] = $user_id;
-        $_SESSION['role'] = 'member';
+        $_SESSION['user_id']  = $user_id;
+        $_SESSION['role']     = 'member';
         $_SESSION['user_name'] = $name;
+        $_SESSION['username'] = $username;
 
         redirect_by_role('member');
     }
