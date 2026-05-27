@@ -178,6 +178,13 @@
     font-weight: 500;
     color: var(--text);
     margin-bottom: 0.5rem;
+    text-decoration: none;
+    display: block;
+}
+
+.crow__instructor:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .crow__difficulty {

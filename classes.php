@@ -233,7 +233,7 @@ require __DIR__ . '/includes/header.php';
                         <p class="crow__desc"><?= e($cls['description'] ?? '') ?></p>
                     </div>
                     <div class="crow__meta">
-                        <p class="crow__instructor"><?= e($cls['trainer_name']) ?></p>
+                        <a class="crow__instructor" href="/trainer.php?id=<?= (int)$cls['trainer_id'] ?>"><?= e($cls['trainer_name']) ?></a>
                         <p class="crow__difficulty crow__difficulty--<?= $diff['class'] ?>">
                             <?= e($diff['label']) ?>
                         </p>
