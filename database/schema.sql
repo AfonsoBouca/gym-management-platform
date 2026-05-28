@@ -51,6 +51,7 @@ CREATE TABLE classes(
     difficulty TEXT NOT NULL CHECK (difficulty IN('beginner', 'intermediate', 'advanced')),
     duration_minutes INTEGER NOT NULL,
     capacity INTEGER NOT NULL,
+    photo TEXT,
     is_active INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (trainer_id) REFERENCES users(id) ON DELETE RESTRICT
 );
@@ -187,4 +188,4 @@ CREATE INDEX idx_personal_bookings_trainer ON personal_bookings (trainer_id, boo
 CREATE INDEX idx_personal_bookings_member  ON personal_bookings (member_id);
 CREATE INDEX idx_workout_logs_member  ON workout_logs (member_id, logged_at);
 CREATE INDEX idx_subscriptions_member ON member_subscriptions (member_id, status);
-CREATE INDEX idx_remember_tokens_hash ON remember_tokens (token_hash);
+CREATE INDEX idx_remember_tokens_hash ON remember_me_tokens (token_hash);
