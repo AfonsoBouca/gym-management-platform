@@ -235,6 +235,18 @@ include __DIR__ . '/includes/header.php';
         </div>
     </section>
 
+    <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+    <section class="profile-enrollments">
+        <div class="profile-form-card">
+            <header class="profile-form-card__header">
+                <h2>Admin Dashboard</h2>
+                <p>Manage users, classes, and equipment.</p>
+            </header>
+            <a href="/admin/dashboard.php" class="button button--ghost" style="margin-top:1rem;">Open Dashboard →</a>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <?php if (($_SESSION['role'] ?? '') === 'trainer'): ?>
     <section class="profile-enrollments">
         <div class="profile-form-card">

@@ -214,7 +214,7 @@ require __DIR__ . '/includes/header.php';
                     $start_time    = $cls_sessions[0]['start_time'] ?? '00:00';
                     $start_hour    = (int) explode(':', $start_time)[0];
                     $time_period   = $start_hour < 12 ? 'morning' : ($start_hour < 17 ? 'afternoon' : 'night');
-                    $image         = $class_images[$cls['name']] ?? 'default.jpg';
+                    $image         = !empty($cls['photo']) ? $cls['photo'] : ($class_images[$cls['name']] ?? null);
                     $color         = $class_colors[$cls['name']] ?? 'var(--accent)';
                     $rating        = $ratings[$cls['id']] ?? null;
                 ?>
@@ -223,11 +223,13 @@ require __DIR__ . '/includes/header.php';
                          data-days="<?= e(implode(',', $cls_days)) ?>"
                          data-time="<?= e($time_period) ?>"
                          style="--card-accent: <?= e($color) ?>;">
+                    <?php if ($image): ?>
                     <figure class="crow__media">
                         <img src="/assets/images/classes/<?= e($image) ?>"
                              alt="<?= e($cls['name']) ?>"
                              class="crow__image" loading="lazy">
                     </figure>
+                    <?php endif; ?>
                     <div class="crow__info">
                         <h2 class="crow__name"><?= e($cls['name']) ?></h2>
                         <p class="crow__desc"><?= e($cls['description'] ?? '') ?></p>

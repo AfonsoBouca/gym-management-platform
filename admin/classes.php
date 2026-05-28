@@ -9,6 +9,8 @@ $pdo     = get_db();
 $errors  = [];
 $success = '';
 
+try { $pdo->exec("ALTER TABLE classes ADD COLUMN photo TEXT"); } catch (\PDOException $e) {}
+
 // fetch trainers for dropdowns 
 $trainers = $pdo->query(
     "SELECT id, name FROM users WHERE role = 'trainer' AND is_active = 1 ORDER BY name"
@@ -22,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action   = $_POST['action']   ?? '';
         $class_id = (int)($_POST['class_id'] ?? 0);
 
-        // create class 
+        // create class
         if ($action === 'create_class') {
             $name       = trim($_POST['name']        ?? '');
             $trainer_id = (int)($_POST['trainer_id'] ?? 0);
@@ -37,19 +39,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($duration <= 0)                                                 $errors[] = 'Duration must be greater than 0.';
             if ($capacity <= 0)                                                 $errors[] = 'Capacity must be greater than 0.';
 
+            $photo_filename = null;
+            if (!empty($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                $img_info = @getimagesize($_FILES['photo']['tmp_name']);
+                $mime     = $img_info['mime'] ?? '';
+                $allowed  = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+                if (!isset($allowed[$mime])) {
+                    $errors[] = 'Upload a PNG, JPG, or WEBP image.';
+                } elseif ($_FILES['photo']['size'] > 2_500_000) {
+                    $errors[] = 'Image must be 2.5MB or smaller.';
+                } else {
+                    $photo_filename = 'class-' . bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
+                    $upload_dir = __DIR__ . '/../assets/images/classes';
+                    if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+                    if (!move_uploaded_file($_FILES['photo']['tmp_name'], "$upload_dir/$photo_filename")) {
+                        $errors[] = 'Unable to save image.';
+                        $photo_filename = null;
+                    }
+                }
+            }
+
             if (empty($errors)) {
                 $pdo->prepare(
-                    "INSERT INTO classes (trainer_id, name, description, difficulty, duration_minutes, capacity)
-                     VALUES (:tid, :name, :desc, :diff, :dur, :cap)"
+                    "INSERT INTO classes (trainer_id, name, description, difficulty, duration_minutes, capacity, photo)
+                     VALUES (:tid, :name, :desc, :diff, :dur, :cap, :photo)"
                 )->execute([
                     ':tid'  => $trainer_id, ':name' => $name,
                     ':desc' => $description ?: null,
-                    ':diff' => $difficulty,  ':dur'  => $duration, ':cap' => $capacity,
+                    ':diff' => $difficulty,  ':dur'  => $duration,
+                    ':cap'  => $capacity,    ':photo' => $photo_filename,
                 ]);
                 $success = "Class \"$name\" created.";
             }
 
-        // update class 
+        // update class
         } elseif ($action === 'update_class') {
             $name        = trim($_POST['name']        ?? '');
             $trainer_id  = (int)($_POST['trainer_id'] ?? 0);
@@ -65,16 +88,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($duration <= 0)                                                 $errors[] = 'Duration must be greater than 0.';
             if ($capacity <= 0)                                                 $errors[] = 'Capacity must be greater than 0.';
 
+            $photo_filename = $_POST['current_photo'] ?: null;
+            if (!empty($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                $img_info = @getimagesize($_FILES['photo']['tmp_name']);
+                $mime     = $img_info['mime'] ?? '';
+                $allowed  = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+                if (!isset($allowed[$mime])) {
+                    $errors[] = 'Upload a PNG, JPG, or WEBP image.';
+                } elseif ($_FILES['photo']['size'] > 2_500_000) {
+                    $errors[] = 'Image must be 2.5MB or smaller.';
+                } else {
+                    $new_filename = 'class-' . bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
+                    $upload_dir   = __DIR__ . '/../assets/images/classes';
+                    if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+                    if (move_uploaded_file($_FILES['photo']['tmp_name'], "$upload_dir/$new_filename")) {
+                        $photo_filename = $new_filename;
+                    } else {
+                        $errors[] = 'Unable to save image.';
+                    }
+                }
+            }
+
             if (empty($errors)) {
                 $pdo->prepare(
                     "UPDATE classes SET trainer_id=:tid, name=:name, description=:desc,
-                     difficulty=:diff, duration_minutes=:dur, capacity=:cap
+                     difficulty=:diff, duration_minutes=:dur, capacity=:cap, photo=:photo
                      WHERE id=:id"
                 )->execute([
                     ':tid'  => $trainer_id, ':name' => $name,
                     ':desc' => $description ?: null,
-                    ':diff' => $difficulty, ':dur'  => $duration,
-                    ':cap'  => $capacity,   ':id'   => $class_id,
+                    ':diff' => $difficulty,  ':dur'  => $duration,
+                    ':cap'  => $capacity,    ':photo' => $photo_filename,
+                    ':id'   => $class_id,
                 ]);
                 $success = 'Class updated.';
             }
@@ -143,7 +188,7 @@ if (in_array($filter_difficulty, ['beginner','intermediate','advanced'])) {
 }
 
 $stmt = $pdo->prepare(
-    "SELECT c.id, c.name, c.description, c.difficulty, c.duration_minutes, c.capacity,
+    "SELECT c.id, c.name, c.description, c.difficulty, c.duration_minutes, c.capacity, c.photo,
             u.name AS trainer_name, u.id AS trainer_id
        FROM classes c
        JOIN users u ON u.id = c.trainer_id
@@ -211,7 +256,7 @@ include __DIR__ . '/../includes/header.php';
             <p>Add a new class to the catalog.</p>
         </header>
         <div class="profile-form-card">
-            <form class="profile-form" method="post" action="/admin/classes.php" novalidate>
+            <form class="profile-form" method="post" action="/admin/classes.php" enctype="multipart/form-data" novalidate>
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="action"     value="create_class">
 
@@ -251,6 +296,10 @@ include __DIR__ . '/../includes/header.php';
                 <div class="form__group">
                     <label class="form__label">Description <span style="color:var(--text-muted)">(optional)</span></label>
                     <textarea name="description" class="form__input" rows="2"></textarea>
+                </div>
+                <div class="form__group">
+                    <label class="form__label">Photo <span style="color:var(--text-muted)">(optional — PNG, JPG, WEBP up to 2.5MB)</span></label>
+                    <input type="file" name="photo" class="form__input" accept="image/png,image/jpeg,image/webp">
                 </div>
                 <button type="submit" class="button button--primary">Create Class</button>
             </form>
@@ -312,7 +361,8 @@ include __DIR__ . '/../includes/header.php';
                                     data-difficulty="<?= e($c['difficulty']) ?>"
                                     data-duration="<?= $c['duration_minutes'] ?>"
                                     data-capacity="<?= $c['capacity'] ?>"
-                                    data-description="<?= e($c['description'] ?? '') ?>">
+                                    data-description="<?= e($c['description'] ?? '') ?>"
+                                    data-photo="<?= e($c['photo'] ?? '') ?>">
                                 Edit
                             </button>
                             <form method="post" action="/admin/classes.php" style="display:inline">
@@ -383,10 +433,11 @@ include __DIR__ . '/../includes/header.php';
                 <h2 id="edit-class-title">Edit Class</h2>
                 <button type="button" class="admin-modal__close" aria-label="Close">✕</button>
             </header>
-            <form class="profile-form" method="post" action="/admin/classes.php" novalidate>
-                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                <input type="hidden" name="action"     value="update_class">
-                <input type="hidden" name="class_id"   id="edit-class-id">
+            <form class="profile-form" method="post" action="/admin/classes.php" enctype="multipart/form-data" novalidate>
+                <input type="hidden" name="csrf_token"    value="<?= e(csrf_token()) ?>">
+                <input type="hidden" name="action"        value="update_class">
+                <input type="hidden" name="class_id"      id="edit-class-id">
+                <input type="hidden" name="current_photo" id="edit-class-current-photo">
 
                 <div class="profile-form__row">
                     <div class="form__group">
@@ -424,6 +475,13 @@ include __DIR__ . '/../includes/header.php';
                     <label class="form__label">Description</label>
                     <textarea name="description" id="edit-class-description" class="form__input" rows="2"></textarea>
                 </div>
+                <div class="form__group">
+                    <label class="form__label">Photo <span style="color:var(--text-muted)">(leave empty to keep current)</span></label>
+                    <div id="edit-class-photo-preview" style="margin-bottom:0.5rem;display:none">
+                        <img id="edit-class-photo-img" src="" alt="Current photo" style="max-height:100px;border-radius:0.5rem;">
+                    </div>
+                    <input type="file" name="photo" class="form__input" accept="image/png,image/jpeg,image/webp">
+                </div>
                 <div class="admin-modal__footer">
                     <button type="submit" class="button button--primary">Save Changes</button>
                     <button type="button" class="button button--ghost admin-modal__close">Cancel</button>
@@ -441,13 +499,22 @@ include __DIR__ . '/../includes/header.php';
 
     document.querySelectorAll('.admin-class-edit-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.getElementById('edit-class-id').value          = btn.dataset.id;
-            document.getElementById('edit-class-name').value        = btn.dataset.name;
-            document.getElementById('edit-class-trainer').value     = btn.dataset.trainer;
-            document.getElementById('edit-class-difficulty').value  = btn.dataset.difficulty;
-            document.getElementById('edit-class-duration').value    = btn.dataset.duration;
-            document.getElementById('edit-class-capacity').value    = btn.dataset.capacity;
-            document.getElementById('edit-class-description').value = btn.dataset.description;
+            document.getElementById('edit-class-id').value           = btn.dataset.id;
+            document.getElementById('edit-class-name').value         = btn.dataset.name;
+            document.getElementById('edit-class-trainer').value      = btn.dataset.trainer;
+            document.getElementById('edit-class-difficulty').value   = btn.dataset.difficulty;
+            document.getElementById('edit-class-duration').value     = btn.dataset.duration;
+            document.getElementById('edit-class-capacity').value     = btn.dataset.capacity;
+            document.getElementById('edit-class-description').value  = btn.dataset.description;
+            document.getElementById('edit-class-current-photo').value = btn.dataset.photo;
+            const preview = document.getElementById('edit-class-photo-preview');
+            const img     = document.getElementById('edit-class-photo-img');
+            if (btn.dataset.photo) {
+                img.src = '/assets/images/classes/' + btn.dataset.photo;
+                preview.style.display = '';
+            } else {
+                preview.style.display = 'none';
+            }
             modal.setAttribute('aria-hidden', 'false');
             modal.classList.add('is-open');
         });
