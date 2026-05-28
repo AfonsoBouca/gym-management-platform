@@ -9,6 +9,7 @@
 .profile-page__hero {
     display: grid;
     gap: 1.5rem;
+    width: 100%;
 }
 
 .profile-card {
@@ -19,6 +20,7 @@
     gap: 1.5rem;
     align-items: center;
     border-radius: 1rem;
+    width:100%;
 }
 
 .profile-avatar {
@@ -130,6 +132,7 @@
     border: 1px solid var(--border);
     border-radius: 1rem;
     padding: 2rem;
+    width:100%;
 }
 
 .profile-form-card__header h2 {
@@ -191,6 +194,9 @@
     font-size: 0.9rem;
 }
 
+.profile-enrollments {
+    width: 100%;
+}
 .profile-enrollments__empty {
     margin-top: 1.25rem;
     color: var(--text-muted);
@@ -241,6 +247,10 @@
     padding: 0.4rem 0.9rem;
     font-size: 0.75rem;
     flex-shrink: 0;
+}
+
+.profile-reviews {
+    width: 100%;
 }
 
 .profile-review-list {

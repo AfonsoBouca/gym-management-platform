@@ -6,7 +6,7 @@
     gap: 3rem;
 }
  
-/* ── Back link ───────────────────────────────────────────────────── */
+/* Back link */
  
 .admin-back {
     color: var(--text-muted);
@@ -19,7 +19,7 @@
 }
 .admin-back:hover { color: var(--text); }
  
-/* ── Section ─────────────────────────────────────────────────────── */
+/* Section */
  
 .admin-section {
     display: flex;
@@ -46,7 +46,7 @@
     color: var(--text-muted);
 }
  
-/* ── Stat cards ──────────────────────────────────────────────────── */
+/* Stat cards */
  
 .admin-stats {
     list-style: none;
@@ -88,7 +88,7 @@
     color: var(--text-muted);
 }
  
-/* ── Nav cards (dashboard) ───────────────────────────────────────── */
+/* Nav cards (dashboard) */
  
 .admin-nav-cards {
     list-style: none;
@@ -148,7 +148,7 @@
     transform: translateX(4px);
 }
  
-/* ── Notice banners ──────────────────────────────────────────────── */
+/* Notice banners */
  
 .admin-notice {
     padding: 0.875rem 1rem;
@@ -173,7 +173,7 @@
     padding-left: 1.25rem;
 }
  
-/* ── Filters bar ─────────────────────────────────────────────────── */
+/* Filters bar */
  
 .admin-filters {
     display: flex;
@@ -192,7 +192,7 @@
     min-width: 9rem;
 }
  
-/* ── Table ───────────────────────────────────────────────────────── */
+/* Table */
  
 .admin-table-wrap {
     overflow-x: auto;
@@ -249,7 +249,7 @@
     flex-wrap: wrap;
 }
  
-/* ── Status badges ───────────────────────────────────────────────── */
+/* Status badges */
  
 .admin-status,
 .admin-equip-status {
@@ -292,7 +292,7 @@
     color: #e05a5a;
 }
  
-/* ── Empty state ─────────────────────────────────────────────────── */
+/* Empty state */
  
 .admin-empty {
     color: var(--text-muted);
@@ -300,7 +300,7 @@
     padding: 2rem 0;
 }
  
-/* ── Class list ──────────────────────────────────────────────────── */
+/* Class list */
  
 .admin-class-list {
     list-style: none;
@@ -368,7 +368,7 @@
     flex-shrink: 0;
 }
  
-/* ── Sessions sub-section ────────────────────────────────────────── */
+/* Sessions sub-section  */
  
 .admin-sessions {
     border-top: 1px solid var(--border);
@@ -448,7 +448,7 @@
     flex-shrink: 0;
 }
  
-/* ── Modal ───────────────────────────────────────────────────────── */
+/* Modal/window */
  
 .admin-modal {
     display: none;
@@ -520,7 +520,7 @@
     margin-top: 0.5rem;
 }
  
-/* ── Responsive ──────────────────────────────────────────────────── */
+/* Responsive  */
  
 @media (max-width: 600px) {
     .admin-dashboard {

@@ -61,6 +61,8 @@ CREATE TABLE sessions(
     day_of_week TEXT NOT NULL CHECK (day_of_week IN ('monday','tuesday','wednesday','thursday','friday','saturday','sunday')),
     start_time TEXT NOT NULL,
     duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
+    status TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'cancelled')),
+    notes TEXT,
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );
 
@@ -177,3 +179,12 @@ CREATE TABLE member_achievements(
 );
 
 --may create indexes for faster query search
+
+CREATE INDEX idx_enrollments_session  ON enrollments (session_id, status);
+CREATE INDEX idx_enrollments_member   ON enrollments (member_id);
+CREATE INDEX idx_sessions_class       ON sessions (class_id);
+CREATE INDEX idx_personal_bookings_trainer ON personal_bookings (trainer_id, booking_date);
+CREATE INDEX idx_personal_bookings_member  ON personal_bookings (member_id);
+CREATE INDEX idx_workout_logs_member  ON workout_logs (member_id, logged_at);
+CREATE INDEX idx_subscriptions_member ON member_subscriptions (member_id, status);
+CREATE INDEX idx_remember_tokens_hash ON remember_tokens (token_hash);

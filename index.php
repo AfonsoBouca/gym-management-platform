@@ -33,7 +33,7 @@ include __DIR__ . '/includes/header.php';
             <h1 id="hero-title" class="hero__brand-name">FITNESS DOWN</h1>
             <div class="hero__actions">
                 <?php if (!isset($_SESSION['user_id'])): ?>
-                <a href="#memberships" class="button button--primary button--lg">Join Now</a>
+                <a href="register.php" class="button button--primary button--lg">Join Now</a>
                 <?php endif; ?>
             </div>
         </div>

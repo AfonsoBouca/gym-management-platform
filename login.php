@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </ul>
             </nav>
 
-            <a href="index.php#enroll" class="button button--primary">Join Now</a>
+            <a href="register.php" class="button button--primary">Join Now</a>
         </div>
     </header>
 

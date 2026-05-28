@@ -33,28 +33,28 @@ that serve as the primary evalution element. These files can be found directly i
 ## Features
 
 **All users:**
-- [ ] Register a new account.
-- [ ] Log in and out.
+- [X] Register a new account.
+- [X] Log in and out.
 - [ ] Edit their profile, including name, username, password, and profile photo.
 
 **Members:**
 - [ ] Browse the schedule of available fitness classes, filtering by type, trainer, day, or time.
-- [ ] Enroll in and cancel enrollment from upcoming classes, subject to capacity limits.
-- [ ] View trainer profiles, including their specializations and the classes they teach.
+- [X] Enroll in and cancel enrollment from upcoming classes, subject to capacity limits.
+- [X] View trainer profiles, including their specializations and the classes they teach.
 - [ ] Check the current availability of equipment in the main training area.
-- [ ] Leave ratings and reviews for classes they have attended.
+- [X] Leave ratings and reviews for classes they have attended.
 
 **Trainers:**
-- [ ] Manage their public profile, including bio, specializations, and certifications.
-- [ ] View the roster of members enrolled in their classes.
-- [ ] Track and manage their assigned class schedule.
+- [X] Manage their public profile, including bio, specializations, and certifications.
+- [X] View the roster of members enrolled in their classes.
+- [X] Track and manage their assigned class schedule.
 
 **Admins:**
-- [ ] Manage members and trainers (create, update, and deactivate accounts).
-- [ ] Manage the class catalog (create, edit, and remove classes) and assign trainers to them.
-- [ ] Manage equipment in the main training area (add, update availability status, and remove items).
-- [ ] Elevate a user to admin status.
-- [ ] Oversee and ensure the smooth operation of the entire system.
+- [X] Manage members and trainers (create, update, and deactivate accounts).
+- [X] Manage the class catalog (create, edit, and remove classes) and assign trainers to them.
+- [X] Manage equipment in the main training area (add, update availability status, and remove items).
+- [X] Elevate a user to admin status.
+- [X] Oversee and ensure the smooth operation of the entire system.
 
 **Extra:**
 - [ ] Personal training bookings.
@@ -63,15 +63,22 @@ that serve as the primary evalution element. These files can be found directly i
 - [ ] Member progress tracking.
 
 ## Running
-Running still not implemented
+Running is implemented, depending on your PHP location.
+
+If you have PHP added to your system PATH:
+
+[//]: # (not sure about the sqlite3 part, needs check)
+
+    sqlite3 database/gym.db < database/schema.sql
+    php -S localhost:9000 
+
+Else:
 
     sqlite3 database/database.db < database/database.sql
-    php -S localhost:9000
+    (php_location) -S localhost:9000
 
 ## Credentials
 
-Credentials not implemented
-
-- admin/p4s5w0rd
-- member/1234
-- trainer/1234
+carlos@fitnessdown.pt/password123
+admin@fitnessdown.pt/password123
+joao@test.pt/password123
