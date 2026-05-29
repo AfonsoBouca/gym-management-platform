@@ -109,7 +109,7 @@ include __DIR__ . '/../includes/header.php';
             <div class="profile-card__body">
                 <span class="profile-role-badge profile-role-badge--trainer">Trainer</span>
                 <h1 class="profile-card__title">Welcome, <?= e($_SESSION['user_name'] ?? 'Trainer') ?></h1>
-                <p class="profile-card__meta">View your schedule and class rosters. <a href="/profile.php" style="color:var(--text);text-decoration:underline;text-underline-offset:3px;">Edit profile →</a></p>
+                <p class="profile-card__meta">View your schedule and class rosters. <a href="/profile.php" style="color:var(--text);text-decoration:underline;text-underline-offset:3px;">Return to profile →</a></p>
             </div>
         </div>
     </section>

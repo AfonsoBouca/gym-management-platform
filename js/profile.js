@@ -1,4 +1,28 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const tabBtnOverview = document.getElementById('tab-btn-overview');
+    const tabBtnEdit = document.getElementById('tab-btn-edit');
+    const tabContentOverview = document.getElementById('tab-content-overview');
+    const tabContentEdit = document.getElementById('tab-content-edit');
+
+    function switchTab(activeTab) {
+        if (activeTab === 'overview') {
+            if (tabContentOverview) tabContentOverview.style.display = 'block';
+            if (tabContentEdit) tabContentEdit.style.display = 'none';
+            if (tabBtnOverview) tabBtnOverview.classList.add('profile-sidebar__nav-link--active');
+            if (tabBtnEdit) tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
+        } else {
+            if (tabContentOverview) tabContentOverview.style.display = 'none';
+            if (tabContentEdit) tabContentEdit.style.display = 'block';
+            if (tabBtnOverview) tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnEdit) tabBtnEdit.classList.add('profile-sidebar__nav-link--active');
+        }
+    }
+
+    if (tabBtnOverview && tabBtnEdit) {
+        tabBtnOverview.addEventListener('click', () => switchTab('overview'));
+        tabBtnEdit.addEventListener('click', () => switchTab('edit'));
+    }
+
     const fileInput = document.getElementById('profile-photo');
     const preview = document.getElementById('photo-preview');
 
