@@ -73,13 +73,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.star-rating').forEach(initStars);
 
-    function setStars(widget, rating) {
-        widget.dataset.current = rating;
-        widget.querySelectorAll('.star').forEach(s =>
-            s.classList.toggle('star--on', +s.dataset.value <= rating)
-        );
-    }
-
     document.querySelectorAll('.profile-review-submit').forEach(btn => {
         btn.addEventListener('click', () => {
             const enrollmentId = btn.dataset.enrollmentId;
@@ -166,7 +159,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.profile-enrollment-cancel').forEach(btn => {
         btn.addEventListener('click', function () {
             const sessionId = btn.dataset.sessionId;
-            const name      = btn.dataset.name;
 
             btn.disabled = true;
 

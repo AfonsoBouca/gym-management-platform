@@ -232,6 +232,115 @@ foreach ($enrollments as $e) {
 }
 echo "Inserted " . count($enrollments) . " enrollments for test member.\n";
 
+// ── equipment ──────────────────────────────────────────────────────
+$insertEquip = $pdo->prepare(
+    "INSERT INTO equipment (type, name, status, notes)
+     VALUES (:type, :name, :status, :notes)"
+);
+
+$equipment_items = [
+    // Cardio
+    ['Cardio', 'Treadmill #1', 'available', 'Operational'],
+    ['Cardio', 'Treadmill #2', 'available', 'Operational'],
+    ['Cardio', 'Treadmill #3', 'available', 'Operational'],
+    ['Cardio', 'Treadmill #4', 'maintenance', 'Sensor calibration needed'],
+    ['Cardio', 'Treadmill #5', 'available', 'Operational'],
+    ['Cardio', 'Treadmill #6', 'available', 'Operational'],
+    ['Cardio', 'Treadmill #7', 'maintenance', 'Belt worn, awaiting replacement'],
+    ['Cardio', 'Treadmill #8', 'available', 'Operational'],
+    ['Cardio', 'Treadmill #9', 'available', 'Operational'],
+    ['Cardio', 'Treadmill #10', 'available', 'Operational'],
+    
+    ['Cardio', 'Stationary Bike #1', 'available', 'Operational'],
+    ['Cardio', 'Stationary Bike #2', 'available', 'Operational'],
+    ['Cardio', 'Stationary Bike #3', 'available', 'Operational'],
+    ['Cardio', 'Stationary Bike #4', 'available', 'Operational'],
+    ['Cardio', 'Stationary Bike #5', 'available', 'Operational'],
+    ['Cardio', 'Stationary Bike #6', 'available', 'Operational'],
+    ['Cardio', 'Stationary Bike #7', 'available', 'Operational'],
+    ['Cardio', 'Stationary Bike #8', 'available', 'Operational'],
+    
+    ['Cardio', 'Elliptical Cross Trainer #1', 'available', 'Operational'],
+    ['Cardio', 'Elliptical Cross Trainer #2', 'available', 'Operational'],
+    ['Cardio', 'Elliptical Cross Trainer #3', 'maintenance', 'Squeaking noise in left pedal'],
+    ['Cardio', 'Elliptical Cross Trainer #4', 'available', 'Operational'],
+    ['Cardio', 'Elliptical Cross Trainer #5', 'available', 'Operational'],
+    ['Cardio', 'Elliptical Cross Trainer #6', 'available', 'Operational'],
+    
+    // Chest
+    ['Chest', 'Flat Bench Press #1', 'available', 'Operational'],
+    ['Chest', 'Flat Bench Press #2', 'maintenance', 'Reupholstering torn vinyl cushion'],
+    ['Chest', 'Flat Bench Press #3', 'available', 'Operational'],
+    ['Chest', 'Flat Bench Press #4', 'available', 'Operational'],
+    ['Chest', 'Flat Bench Press #5', 'available', 'Operational'],
+    
+    ['Chest', 'Incline Bench Press #1', 'available', 'Operational'],
+    ['Chest', 'Incline Bench Press #2', 'available', 'Operational'],
+    ['Chest', 'Incline Bench Press #3', 'available', 'Operational'],
+    ['Chest', 'Incline Bench Press #4', 'available', 'Operational'],
+    
+    ['Chest', 'Decline Bench Press #1', 'available', 'Operational'],
+    ['Chest', 'Decline Bench Press #2', 'available', 'Operational'],
+    
+    ['Chest', 'Pec Dec Fly Machine #1', 'available', 'Operational'],
+    ['Chest', 'Pec Dec Fly Machine #2', 'available', 'Operational'],
+    ['Chest', 'Pec Dec Fly Machine #3', 'maintenance', 'Pulley cable replacement'],
+    
+    // Legs
+    ['Legs', 'Power Squat Rack #1', 'available', 'Operational'],
+    ['Legs', 'Power Squat Rack #2', 'available', 'Operational'],
+    ['Legs', 'Power Squat Rack #3', 'available', 'Operational'],
+    ['Legs', 'Power Squat Rack #4', 'available', 'Operational'],
+    ['Legs', 'Power Squat Rack #5', 'maintenance', 'Safety bar replacement pending'],
+    ['Legs', 'Power Squat Rack #6', 'available', 'Operational'],
+    ['Legs', 'Power Squat Rack #7', 'available', 'Operational'],
+    ['Legs', 'Power Squat Rack #8', 'available', 'Operational'],
+    
+    ['Legs', 'Plate-Loaded Leg Press #1', 'available', 'Operational'],
+    ['Legs', 'Plate-Loaded Leg Press #2', 'available', 'Operational'],
+    ['Legs', 'Plate-Loaded Leg Press #3', 'available', 'Operational'],
+    ['Legs', 'Plate-Loaded Leg Press #4', 'available', 'Operational'],
+    
+    ['Legs', 'Seated Leg Extension #1', 'available', 'Operational'],
+    ['Legs', 'Seated Leg Extension #2', 'available', 'Operational'],
+    ['Legs', 'Seated Leg Extension #3', 'maintenance', 'Weight stack pin replacement'],
+    
+    ['Legs', 'Lying Leg Curl #1', 'available', 'Operational'],
+    ['Legs', 'Lying Leg Curl #2', 'available', 'Operational'],
+    ['Legs', 'Lying Leg Curl #3', 'available', 'Operational'],
+    
+    // Back
+    ['Back', 'Lat Pulldown Machine #1', 'available', 'Operational'],
+    ['Back', 'Lat Pulldown Machine #2', 'maintenance', 'Cable fraying detected'],
+    ['Back', 'Lat Pulldown Machine #3', 'available', 'Operational'],
+    ['Back', 'Lat Pulldown Machine #4', 'available', 'Operational'],
+    
+    ['Back', 'Seated Cable Row #1', 'available', 'Operational'],
+    ['Back', 'Seated Cable Row #2', 'available', 'Operational'],
+    ['Back', 'Seated Cable Row #3', 'available', 'Operational'],
+    
+    ['Back', 'Assisted Chin-Dip Station #1', 'available', 'Operational'],
+    ['Back', 'Assisted Chin-Dip Station #2', 'available', 'Operational'],
+    
+    // Shoulders
+    ['Shoulders', 'Seated Shoulder Press #1', 'available', 'Operational'],
+    ['Shoulders', 'Seated Shoulder Press #2', 'available', 'Operational'],
+    ['Shoulders', 'Seated Shoulder Press #3', 'maintenance', 'Hydraulic seat adjustment faulty'],
+    
+    ['Shoulders', 'Lateral Raise Machine #1', 'available', 'Operational'],
+    ['Shoulders', 'Lateral Raise Machine #2', 'available', 'Operational']
+];
+
+foreach ($equipment_items as $eq) {
+    $insertEquip->execute([
+        ':type'   => $eq[0],
+        ':name'   => $eq[1],
+        ':status' => $eq[2],
+        ':notes'  => $eq[3]
+    ]);
+}
+echo "Inserted " . count($equipment_items) . " equipment items.\n";
+
 // ── done ───────────────────────────────────────────────────────────
 echo "\n✔  gym.db created successfully at: $dbPath\n";
 echo "   Users password: password123\n";

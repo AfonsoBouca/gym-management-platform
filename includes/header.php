@@ -37,6 +37,9 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <nav class="primary-nav" aria-label="Primary">
             <ul class="primary-nav__list">
                 <li><a href="/classes.php" class="primary-nav__link" <?= $current_page === 'classes' ? 'aria-current="page"' : '' ?>>Classes</a></li>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <li><a href="/equipment.php" class="primary-nav__link" <?= $current_page === 'equipment' ? 'aria-current="page"' : '' ?>>Equipment</a></li>
+                <?php endif; ?>
                 <?php if (!isset($_SESSION['user_id'])): ?>
                     <li><a href="/login.php" class="primary-nav__link" <?= $current_page === 'login' ? 'aria-current="page"' : '' ?>>Login</a></li>
                 <?php endif; ?>
