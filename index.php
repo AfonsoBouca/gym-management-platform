@@ -2,7 +2,11 @@
 declare(strict_types=1);
 require_once __DIR__ . '/includes/auth.php';
 
-$join_href = isset($_SESSION['user_id']) ? '/profile.php' : '/register.php';
+$join_href = isset($_SESSION['user_id']) ? '/profile.php?tab=membership' : '/register.php';
+
+$pdo = get_db();
+$stmt = $pdo->query("SELECT id, name, price, description, features FROM membership_plans WHERE is_active = 1 ORDER BY price ASC");
+$membership_plans = $stmt->fetchAll();
 
 $page_title       = 'Fitness Down — Built in Silence';
 $page_description = 'Fitness Down — a gym built for those who train in silence. Premium equipment, no compromises.';
@@ -118,71 +122,50 @@ include __DIR__ . '/includes/header.php';
         </header>
 
         <ul class="plan-list">
+            <?php 
+            $plan_classes = ['plan--featured', 'plan--lilac', 'plan--gold'];
+            $plan_badges = ['Most chosen', 'Best offer', 'Premium'];
+            foreach ($membership_plans as $idx => $plan): 
+                $class = $plan_classes[$idx % 3];
+                $badge = $plan_badges[$idx % 3];
+                if (strcasecmp($plan['name'], 'Essential') === 0) {
+                    $class = 'plan--featured';
+                    $badge = 'Most chosen';
+                } elseif (strcasecmp($plan['name'], 'All Access') === 0) {
+                    $class = 'plan--lilac';
+                    $badge = 'Best offer';
+                } elseif (strcasecmp($plan['name'], 'Elite') === 0) {
+                    $class = 'plan--gold';
+                    $badge = 'Premium';
+                }
+                $features = array_filter(array_map('trim', explode('|', $plan['features'])));
+            ?>
             <li>
-                <article class="plan plan--featured">
-                    <p class="plan__badge">Most chosen</p>
+                <article class="plan <?= e($class) ?>">
+                    <?php if ($badge): ?>
+                        <p class="plan__badge"><?= e($badge) ?></p>
+                    <?php endif; ?>
                     <header class="plan__header">
-                        <h3 class="plan__name">Essential</h3>
+                        <h3 class="plan__name"><?= e($plan['name']) ?></h3>
                         <p class="plan__price">
-                            <span class="plan__currency">€</span><span class="plan__amount">60</span>
+                            <span class="plan__currency">€</span><span class="plan__amount"><?= (int)$plan['price'] ?></span>
                             <span class="plan__period">/ month</span>
                         </p>
                     </header>
-                    <p class="plan__summary">
-                        Full facility access during staffed hours except swimming pool.
-                    </p>
-                    <ul class="plan__features">
-                        <li>Gym access Mon–Sat</li>
-                        <li>06:30–22:30</li>
-                        <li>2x classes per month</li>
-                    </ul>
-                    <a href="<?= $join_href ?>" class="button button--ghost button--block">Select Essential</a>
-                </article>
-            </li>
-            <li>
-                <article class="plan plan--lilac">
-                    <p class="plan__badge">Best offer</p>
-                    <header class="plan__header">
-                        <h3 class="plan__name">All Access</h3>
-                        <p class="plan__price">
-                            <span class="plan__currency">€</span><span class="plan__amount">100</span>
-                            <span class="plan__period">/ month</span>
+                    <?php if (!empty($plan['description'])): ?>
+                        <p class="plan__summary">
+                            <?= e($plan['description']) ?>
                         </p>
-                    </header>
-                    <p class="plan__summary">
-                        Unrestricted entry, any day, any hour. Plus two weekly classes.
-                    </p>
+                    <?php endif; ?>
                     <ul class="plan__features">
-                        <li>24/7 unrestricted access</li>
-                        <li>2x classes per week</li>
-                        <li>Swimming pool access during the week</li>
+                        <?php foreach ($features as $feat): ?>
+                            <li><?= e($feat) ?></li>
+                        <?php endforeach; ?>
                     </ul>
-                    <a href="<?= $join_href ?>" class="button button--ghost button--block">Select All Access</a>
+                    <a href="<?= $join_href ?>" class="button button--ghost button--block">Select <?= e($plan['name']) ?></a>
                 </article>
             </li>
-            <li>
-                <article class="plan plan--gold">
-                    <p class="plan__badge">Premium</p>
-                    <header class="plan__header">
-                        <h3 class="plan__name">Elite</h3>
-                        <p class="plan__price">
-                            <span class="plan__currency">€</span><span class="plan__amount">300</span>
-                            <span class="plan__period">/ month</span>
-                        </p>
-                    </header>
-                    <p class="plan__summary">
-                        No limits. Everything included, nothing held back.
-                    </p>
-                    <ul class="plan__features">
-                        <li>24/7 unrestricted access</li>
-                        <li>Unlimited group classes</li>
-                        <li>1 nutrition consultation / month</li>
-                        <li>4× personal trainer / month</li>
-                        <li>Priority class booking</li>
-                    </ul>
-                    <a href="<?= $join_href ?>" class="button button--ghost button--block">Select Elite</a>
-                </article>
-            </li>
+            <?php endforeach; ?>
         </ul>
     </section>
 

@@ -56,6 +56,71 @@ function enrolled_count(PDO $pdo, int $session_id): int {
 }
 
 if ($action === 'enroll') {
+    // Check if already enrolled in this session
+    $stmt = $pdo->prepare("SELECT status FROM enrollments WHERE member_id = ? AND session_id = ?");
+    $stmt->execute([$member_id, $session_id]);
+    $existing = $stmt->fetch();
+    $is_already_enrolled = ($existing && $existing['status'] === 'enrolled');
+
+    if (!$is_already_enrolled) {
+        // Fetch active plan
+        $stmt = $pdo->prepare("
+            SELECT mp.name AS plan_name, mp.features 
+            FROM member_subscriptions ms
+            JOIN membership_plans mp ON mp.id = ms.plan_id
+            WHERE ms.member_id = ? AND ms.status = 'active'
+            LIMIT 1
+        ");
+        $stmt->execute([$member_id]);
+        $active_sub = $stmt->fetch();
+
+        // Determine plan limit
+        $plan_limit = 0;
+        if ($active_sub) {
+            $plan_name = $active_sub['plan_name'];
+            $features = $active_sub['features'];
+            if (strcasecmp($plan_name, 'All Access') === 0) {
+                $plan_limit = 8;
+            } elseif (strcasecmp($plan_name, 'Essential') === 0) {
+                $plan_limit = 2;
+            } elseif (strcasecmp($plan_name, 'Elite') === 0) {
+                $plan_limit = -1;
+            } else {
+                if (stripos($features ?? '', 'unlimited') !== false) {
+                    $plan_limit = -1;
+                } elseif (preg_match('/(\d+)\s*x?\s*class(es)?\s*per\s*week/i', $features ?? '', $matches)) {
+                    $plan_limit = (int)$matches[1] * 4;
+                } elseif (preg_match('/(\d+)\s*x?\s*class(es)?/i', $features ?? '', $matches)) {
+                    $plan_limit = (int)$matches[1];
+                } else {
+                    $plan_limit = -1;
+                }
+            }
+        }
+
+        // If no active plan, block enrollment
+        if ($plan_limit === 0) {
+            json_out(false, 'You do not have an active membership plan. Please subscribe to a plan to enroll in classes.');
+        }
+
+        // If limited plan, check if the monthly limit was reached
+        if ($plan_limit > 0) {
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) 
+                FROM enrollments 
+                WHERE member_id = ? 
+                  AND status = 'enrolled' 
+                  AND enrolled_at >= date('now', 'start of month')
+            ");
+            $stmt->execute([$member_id]);
+            $current_month_enrollments = (int)$stmt->fetchColumn();
+
+            if ($current_month_enrollments >= $plan_limit) {
+                json_out(false, "You have reached your plan's monthly limit of {$plan_limit} classes. Please upgrade your membership plan for more bookings.");
+            }
+        }
+    }
+
     $count = enrolled_count($pdo, $session_id);
 
     if ($count >= (int)$sess['capacity']) {

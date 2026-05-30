@@ -171,7 +171,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $attended_sessions = [];
 $enrolled_sessions = [];
+$active_sub = null;
+$membership_plans = [];
+
 if (($_SESSION['role'] ?? '') === 'member') {
+    // Fetch active subscription
+    $stmt = $pdo->prepare("
+        SELECT ms.id AS sub_id, ms.start_date, mp.id AS plan_id, mp.name AS plan_name, mp.price, mp.description, mp.features
+        FROM member_subscriptions ms
+        JOIN membership_plans mp ON mp.id = ms.plan_id
+        WHERE ms.member_id = ? AND ms.status = 'active'
+        LIMIT 1
+    ");
+    $stmt->execute([$user_id]);
+    $active_sub = $stmt->fetch();
+
+    // Fetch monthly class enrollments count
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM enrollments 
+        WHERE member_id = ? 
+          AND status = 'enrolled' 
+          AND enrolled_at >= date('now', 'start of month')
+    ");
+    $stmt->execute([$user_id]);
+    $current_month_enrollments = (int)$stmt->fetchColumn();
+
+    // Determine limit and remaining text
+    $plan_limit = 0;
+    if ($active_sub) {
+        $plan_name = $active_sub['plan_name'];
+        $features = $active_sub['features'];
+        if (strcasecmp($plan_name, 'All Access') === 0) {
+            $plan_limit = 8;
+        } elseif (strcasecmp($plan_name, 'Essential') === 0) {
+            $plan_limit = 2;
+        } elseif (strcasecmp($plan_name, 'Elite') === 0) {
+            $plan_limit = -1;
+        } else {
+            if (stripos($features ?? '', 'unlimited') !== false) {
+                $plan_limit = -1;
+            } elseif (preg_match('/(\d+)\s*x?\s*class(es)?\s*per\s*week/i', $features ?? '', $matches)) {
+                $plan_limit = (int)$matches[1] * 4;
+            } elseif (preg_match('/(\d+)\s*x?\s*class(es)?/i', $features ?? '', $matches)) {
+                $plan_limit = (int)$matches[1];
+            } else {
+                $plan_limit = -1;
+            }
+        }
+    }
+
+    if ($plan_limit === -1) {
+        $remaining_text = "Unlimited";
+        $remaining_classes = 9999;
+    } else {
+        $remaining_classes = max(0, $plan_limit - $current_month_enrollments);
+        $remaining_text = "{$remaining_classes} / {$plan_limit} FREE classes remaining this month";
+    }
+
+    // Fetch all active membership plans
+    $membership_plans = $pdo->query("
+        SELECT id, name, price, description, features
+        FROM membership_plans
+        WHERE is_active = 1
+        ORDER BY price ASC
+    ")->fetchAll();
+
     $stmt = $pdo->prepare("
         SELECT e.id AS enrollment_id, c.name AS class_name, s.day_of_week, s.start_time,
                u.name AS trainer_name, r.rating, r.comment
@@ -269,6 +334,9 @@ $extra_js = '/js/profile.js';
 include __DIR__ . '/includes/header.php';
 
 $active_tab = 'overview';
+if (isset($_GET['tab']) && in_array($_GET['tab'], ['overview', 'membership', 'edit'], true)) {
+    $active_tab = $_GET['tab'];
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($errors) || !empty($success)) {
     $active_tab = 'edit';
 }
@@ -290,6 +358,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($errors) || !empty($success)
                 <span class="profile-role-badge profile-role-badge--<?= e($_SESSION['role'] ?? 'member') ?>">
                     <?= e(ucfirst($_SESSION['role'] ?? 'member')) ?>
                 </span>
+                <?php if (($_SESSION['role'] ?? '') === 'member' && $active_sub): ?>
+                    <span class="profile-plan-badge plan-badge--<?= e(strtolower(str_replace(' ', '-', $active_sub['plan_name']))) ?>">
+                        <?= e($active_sub['plan_name']) ?> Plan
+                    </span>
+                <?php endif; ?>
                 <h1 class="profile-sidebar__name"><?= e($user['name']) ?></h1>
                 <p class="profile-sidebar__username">@<?= e($user['username']) ?></p>
                 <p class="profile-sidebar__email"><?= e($user['email']) ?></p>
@@ -299,6 +372,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($errors) || !empty($success)
                 <button type="button" class="profile-sidebar__nav-link <?= $active_tab === 'overview' ? 'profile-sidebar__nav-link--active' : '' ?>" id="tab-btn-overview">
                     📊 Overview
                 </button>
+                <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+                    <button type="button" class="profile-sidebar__nav-link <?= $active_tab === 'membership' ? 'profile-sidebar__nav-link--active' : '' ?>" id="tab-btn-membership">
+                        💳 Membership
+                    </button>
+                <?php endif; ?>
                 <button type="button" class="profile-sidebar__nav-link <?= $active_tab === 'edit' ? 'profile-sidebar__nav-link--active' : '' ?>" id="tab-btn-edit">
                     ⚙ Edit Profile
                 </button>
@@ -462,9 +540,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($errors) || !empty($success)
             <!-- Member Enrollments -->
             <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
                 <section class="profile-enrollments profile-card-wrapper">
-                    <header class="profile-card-header">
-                        <h2>My classes</h2>
-                        <p>Sessions you're currently enrolled in.</p>
+                    <header class="profile-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h2>My classes</h2>
+                            <p>Sessions you're currently enrolled in.</p>
+                        </div>
+                        <?php if ($active_sub): ?>
+                            <div class="classes-counter-badge" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 0.25rem; font-size: 0.875rem;">
+                                <strong>Plan Allowance:</strong> 
+                                <span class="classes-remaining-val" style="color: var(--accent); font-weight: bold; margin-left: 0.25rem;"><?= e($remaining_text) ?></span>
+                            </div>
+                        <?php else: ?>
+                            <div class="classes-counter-badge" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.5rem 1rem; border-radius: 0.25rem; font-size: 0.875rem; color: #ef4444;">
+                                <strong>No Active Plan</strong> (0 classes allowed)
+                            </div>
+                        <?php endif; ?>
                     </header>
                     <?php if (empty($enrolled_sessions)): ?>
                         <p class="profile-enrollments__empty">
@@ -583,6 +673,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($errors) || !empty($success)
                 <?php endif; ?>
             <?php endif; ?>
         </div>
+
+        <!-- Membership Tab -->
+        <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+        <div class="profile-tab-content" id="tab-content-membership" style="display: <?= $active_tab === 'membership' ? 'block' : 'none' ?>;">
+            <section class="profile-card-wrapper">
+                <header class="profile-card-header">
+                    <h2>Gym Membership Plan</h2>
+                    <p>Select or upgrade your gym membership plan to unlock benefits and fitness classes.</p>
+                </header>
+
+                <div class="membership-current-box">
+                    <h3 class="membership-section-title">Your Active Plan</h3>
+                    <?php if ($active_sub): ?>
+                        <div class="membership-status-card plan-tier--<?= e(strtolower(str_replace(' ', '-', $active_sub['plan_name']))) ?>">
+                            <div class="membership-status-header">
+                                <span class="membership-plan-badge"><?= e($active_sub['plan_name']) ?> Plan</span>
+                                <span class="membership-price"><?= (int)$active_sub['price'] ?>€<span class="price-period">/month</span></span>
+                            </div>
+                            <p class="membership-desc" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                <strong>Class Allowance:</strong> <?= e($remaining_text) ?>
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.75rem;">
+                                <p class="membership-start-date" style="margin: 0;">Active since: <strong><?= e(date('F j, Y', strtotime($active_sub['start_date']))) ?></strong></p>
+                                <button type="button" class="button button--danger cancel-subscription-btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Cancel Subscription</button>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="membership-status-card membership-status-card--none">
+                            <p>You do not have an active membership plan. Please select a plan below to gain full access to classes and training facilities.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="membership-plans-grid">
+                    <h3 class="membership-section-title">Available Plans</h3>
+                    <div class="plans-list-grid">
+                        <?php foreach ($membership_plans as $plan): 
+                            $is_current = $active_sub && (int)$active_sub['plan_id'] === (int)$plan['id'];
+                            $tier_class = strtolower(str_replace(' ', '-', $plan['name']));
+                            $features_list = array_filter(array_map('trim', explode('|', $plan['features'])));
+                        ?>
+                            <div class="membership-plan-card <?= $is_current ? 'membership-plan-card--current' : '' ?> plan-tier--<?= e($tier_class) ?>">
+                                <?php if ($is_current): ?>
+                                    <span class="plan-card-ribbon">Active</span>
+                                <?php endif; ?>
+                                <div class="plan-card-header">
+                                    <h4 class="plan-card-title"><?= e($plan['name']) ?></h4>
+                                    <div class="plan-card-price">
+                                        <span class="price-num"><?= (int)$plan['price'] ?>€</span>
+                                        <span class="price-freq">/mo</span>
+                                    </div>
+                                </div>
+                                <ul class="plan-card-features">
+                                    <?php foreach ($features_list as $feat): ?>
+                                        <li>
+                                            <span class="feat-icon">✓</span>
+                                            <span class="feat-text"><?= e($feat) ?></span>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                                <div class="plan-card-action">
+                                    <?php if ($is_current): ?>
+                                        <button type="button" class="button button--primary plan-btn" disabled>Current Plan</button>
+                                    <?php else: ?>
+                                        <button type="button" 
+                                                class="button button--accent plan-btn subscribe-plan-btn" 
+                                                data-plan-id="<?= (int)$plan['id'] ?>"
+                                                data-plan-name="<?= e($plan['name']) ?>">
+                                            <?= $active_sub ? 'Switch to ' . e($plan['name']) : 'Subscribe Now' ?>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <?php endif; ?>
 
         <!-- Edit Profile Tab -->
         <div class="profile-tab-content" id="tab-content-edit" style="display: <?= $active_tab === 'edit' ? 'block' : 'none' ?>;">

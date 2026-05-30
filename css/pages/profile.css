@@ -555,3 +555,273 @@
         width: 100%;
     }
 }
+
+/* ==========================================================================
+   MEMBERSHIP PLANS & BADGES
+   ========================================================================== */
+
+/* Plan Badges in Sidebar */
+.profile-plan-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.65rem;
+    border-radius: 0.25rem;
+    margin-top: 0.5rem;
+    border: 1px solid transparent;
+}
+
+.plan-badge--essential {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: rgba(231, 76, 60, 0.3);
+    color: var(--accent);
+}
+
+.plan-badge--all-access {
+    background: rgba(124, 58, 237, 0.1);
+    border-color: rgba(124, 58, 237, 0.3);
+    color: #7c3aed;
+}
+
+.plan-badge--elite {
+    background: rgba(201, 168, 76, 0.15);
+    border-color: rgba(201, 168, 76, 0.4);
+    color: #C9A84C;
+    box-shadow: 0 0 8px rgba(201, 168, 76, 0.1);
+}
+
+/* Membership tab container & titles */
+.membership-current-box,
+.membership-plans-grid {
+    margin-bottom: 2.5rem;
+}
+
+.membership-section-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Current status card */
+.membership-status-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.membership-status-card--none {
+    border-style: dashed;
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+.membership-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.membership-status-header .membership-plan-badge {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.membership-price {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    color: var(--accent);
+}
+
+.price-period {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: lowercase;
+    font-family: var(--font-body);
+}
+
+.membership-desc {
+    color: var(--text-soft);
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.membership-start-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Plans List Grid */
+.plans-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Membership Plan Card */
+.membership-plan-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 200ms ease, border-color 200ms ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.membership-plan-card:hover {
+    border-color: var(--border-strong);
+}
+
+/* Active plan highlighting */
+.membership-plan-card--current {
+    border-color: var(--accent) !important;
+    background: rgba(var(--bg-surface), 0.85);
+    box-shadow: 0 4px 25px rgba(231, 76, 60, 0.15);
+}
+
+.plan-card-ribbon {
+    position: absolute;
+    top: 15px;
+    right: -30px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 2.5rem;
+    transform: rotate(45deg);
+}
+
+.plan-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.plan-card-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    color: var(--text);
+    margin: 0;
+}
+
+.plan-card-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
+}
+
+.price-num {
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    color: var(--text);
+    line-height: 1;
+}
+
+.price-freq {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.plan-card-desc {
+    color: var(--text-soft);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+    min-height: 54px;
+}
+
+.plan-card-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.plan-card-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.feat-icon {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.feat-text {
+    color: var(--text-soft);
+}
+
+.plan-card-action {
+    margin-top: auto;
+}
+
+.plan-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Tier-specific custom borders and accents to match homepage */
+.plan-tier--essential {
+    border-top: 4px solid var(--accent);
+}
+.plan-tier--essential .plan-card-title,
+.plan-tier--essential .price-num,
+.plan-tier--essential .feat-icon {
+    color: var(--accent);
+}
+
+.plan-tier--all-access {
+    border-top: 4px solid #7c3aed;
+}
+.plan-tier--all-access .plan-card-title,
+.plan-tier--all-access .price-num,
+.plan-tier--all-access .feat-icon {
+    color: #7c3aed;
+}
+
+.plan-tier--elite {
+    border-top: 4px solid #C9A84C;
+}
+.plan-tier--elite .plan-card-title,
+.plan-tier--elite .price-num,
+.plan-tier--elite .feat-icon {
+    color: #C9A84C;
+}

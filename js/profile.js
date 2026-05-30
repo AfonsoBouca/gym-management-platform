@@ -1,26 +1,45 @@
 document.addEventListener('DOMContentLoaded', function () {
     const tabBtnOverview = document.getElementById('tab-btn-overview');
     const tabBtnEdit = document.getElementById('tab-btn-edit');
+    const tabBtnMembership = document.getElementById('tab-btn-membership');
     const tabContentOverview = document.getElementById('tab-content-overview');
     const tabContentEdit = document.getElementById('tab-content-edit');
+    const tabContentMembership = document.getElementById('tab-content-membership');
 
     function switchTab(activeTab) {
         if (activeTab === 'overview') {
             if (tabContentOverview) tabContentOverview.style.display = 'block';
             if (tabContentEdit) tabContentEdit.style.display = 'none';
+            if (tabContentMembership) tabContentMembership.style.display = 'none';
             if (tabBtnOverview) tabBtnOverview.classList.add('profile-sidebar__nav-link--active');
             if (tabBtnEdit) tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnMembership) tabBtnMembership.classList.remove('profile-sidebar__nav-link--active');
+        } else if (activeTab === 'membership') {
+            if (tabContentOverview) tabContentOverview.style.display = 'none';
+            if (tabContentEdit) tabContentEdit.style.display = 'none';
+            if (tabContentMembership) tabContentMembership.style.display = 'block';
+            if (tabBtnOverview) tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnEdit) tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnMembership) tabBtnMembership.classList.add('profile-sidebar__nav-link--active');
         } else {
             if (tabContentOverview) tabContentOverview.style.display = 'none';
             if (tabContentEdit) tabContentEdit.style.display = 'block';
+            if (tabContentMembership) tabContentMembership.style.display = 'none';
             if (tabBtnOverview) tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnEdit) tabBtnEdit.classList.add('profile-sidebar__nav-link--active');
+            if (tabBtnMembership) tabBtnMembership.classList.remove('profile-sidebar__nav-link--active');
         }
     }
 
-    if (tabBtnOverview && tabBtnEdit) {
-        tabBtnOverview.addEventListener('click', () => switchTab('overview'));
-        tabBtnEdit.addEventListener('click', () => switchTab('edit'));
+    if (tabBtnOverview) tabBtnOverview.addEventListener('click', () => switchTab('overview'));
+    if (tabBtnEdit) tabBtnEdit.addEventListener('click', () => switchTab('edit'));
+    if (tabBtnMembership) tabBtnMembership.addEventListener('click', () => switchTab('membership'));
+
+    // Check query params for active tab on load
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = urlParams.get('tab');
+    if (initialTab && ['overview', 'membership', 'edit'].includes(initialTab)) {
+        switchTab(initialTab);
     }
 
     const fileInput = document.getElementById('profile-photo');
@@ -182,4 +201,88 @@ document.addEventListener('DOMContentLoaded', function () {
                 .catch(() => { btn.disabled = false; });
         });
     });
+
+    // Membership Plans Subscriptions
+    document.querySelectorAll('.subscribe-plan-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const planId = btn.dataset.planId;
+            const originalText = btn.textContent;
+            
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            
+            const body = new FormData();
+            body.append('csrf_token', typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : '');
+            body.append('plan_id', planId);
+            
+            fetch('/api/subscribe.php', { method: 'POST', body })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.ok) {
+                        alert(data.msg);
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                        return;
+                    }
+                    // Redirect directly to the membership tab
+                    window.location.href = '/profile.php?tab=membership';
+                })
+                .catch(() => {
+                    alert('An error occurred. Please try again.');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                });
+        });
+    });
+
+    // Cancel Subscription Handler (premium double-click confirmation without native confirm)
+    const cancelSubBtn = document.querySelector('.cancel-subscription-btn');
+    if (cancelSubBtn) {
+        cancelSubBtn.addEventListener('click', () => {
+            if (!cancelSubBtn.classList.contains('confirm-state')) {
+                cancelSubBtn.classList.add('confirm-state');
+                cancelSubBtn.textContent = 'Confirm Cancellation?';
+                cancelSubBtn.dataset.originalColor = cancelSubBtn.style.backgroundColor;
+                cancelSubBtn.style.backgroundColor = '#b91c1c'; // darker red
+                
+                // Automatically reset after 3 seconds if not clicked again
+                setTimeout(() => {
+                    if (cancelSubBtn && cancelSubBtn.classList.contains('confirm-state') && !cancelSubBtn.disabled) {
+                        cancelSubBtn.classList.remove('confirm-state');
+                        cancelSubBtn.textContent = 'Cancel Subscription';
+                        cancelSubBtn.style.backgroundColor = cancelSubBtn.dataset.originalColor || '';
+                    }
+                }, 3000);
+                return;
+            }
+            
+            cancelSubBtn.disabled = true;
+            cancelSubBtn.textContent = 'Cancelling...';
+            
+            const body = new FormData();
+            body.append('csrf_token', typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : '');
+            body.append('plan_id', '0');
+            
+            fetch('/api/subscribe.php', { method: 'POST', body })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.ok) {
+                        alert(data.msg);
+                        cancelSubBtn.disabled = false;
+                        cancelSubBtn.classList.remove('confirm-state');
+                        cancelSubBtn.textContent = 'Cancel Subscription';
+                        cancelSubBtn.style.backgroundColor = cancelSubBtn.dataset.originalColor || '';
+                        return;
+                    }
+                    window.location.href = '/profile.php?tab=membership';
+                })
+                .catch(() => {
+                    alert('An error occurred. Please try again.');
+                    cancelSubBtn.disabled = false;
+                    cancelSubBtn.classList.remove('confirm-state');
+                    cancelSubBtn.textContent = 'Cancel Subscription';
+                    cancelSubBtn.style.backgroundColor = cancelSubBtn.dataset.originalColor || '';
+                });
+        });
+    }
 });

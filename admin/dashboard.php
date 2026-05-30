@@ -13,6 +13,7 @@ $total_classes  = $pdo->query("SELECT COUNT(*) FROM classes WHERE is_active = 1"
 $total_equip    = $pdo->query("SELECT COUNT(*) FROM equipment")->fetchColumn();
 $equip_issues   = $pdo->query("SELECT COUNT(*) FROM equipment WHERE status = 'maintenance'")->fetchColumn();
 $open_enroll    = $pdo->query("SELECT COUNT(*) FROM enrollments WHERE status = 'enrolled'")->fetchColumn();
+$total_plans    = $pdo->query("SELECT COUNT(*) FROM membership_plans")->fetchColumn();
 
 $page_title = 'Admin Dashboard — Fitness Down';
 $page_description = 'Administration dashboard for managing users, classes, and equipment.';
@@ -48,6 +49,10 @@ include __DIR__ . '/../includes/header.php';
                 <p class="admin-stat__label">Active Classes</p>
             </li>
             <li class="admin-stat">
+                <p class="admin-stat__value"><?= (int)$total_plans ?></p>
+                <p class="admin-stat__label">Membership Plans</p>
+            </li>
+            <li class="admin-stat">
                 <p class="admin-stat__value"><?= (int)$open_enroll ?></p>
                 <p class="admin-stat__label">Enrollments</p>
             </li>
@@ -79,6 +84,14 @@ include __DIR__ . '/../includes/header.php';
                     <span class="admin-nav-card__icon" aria-hidden="true">🏋️</span>
                     <span class="admin-nav-card__title">Classes</span>
                     <span class="admin-nav-card__desc">Create, edit, and remove classes from the catalog. Assign trainers and sessions.</span>
+                    <span class="admin-nav-card__arrow" aria-hidden="true">→</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/plans.php" class="admin-nav-card">
+                    <span class="admin-nav-card__icon" aria-hidden="true">💳</span>
+                    <span class="admin-nav-card__title">Plans</span>
+                    <span class="admin-nav-card__desc">Manage membership subscription tiers, prices, descriptions, and feature details.</span>
                     <span class="admin-nav-card__arrow" aria-hidden="true">→</span>
                 </a>
             </li>
