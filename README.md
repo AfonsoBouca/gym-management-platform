@@ -30,23 +30,22 @@
 
 **Extra:**
 - [X] Personal training bookings.
-- [ ] Class waitlist.
+- [X] Class waitlist.
 - [X] Membership plans.
 - [X] Member progress tracking.
+- [X] REST API.
 
 ## Running
 Running is implemented, depending on your PHP location.
 
 If you have PHP added to your system PATH:
 
-[//]: # (not sure about the sqlite3 part, needs check)
-
-    sqlite3 database/gym.db < database/schema.sql
+    php database/seed.php
     php -S localhost:9000 
 
 Else:
 
-    sqlite3 database/database.db < database/database.sql
+    (php_location) database/seed.php
     (php_location) -S localhost:9000
 
 ## Credentials
