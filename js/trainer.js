@@ -1,16 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Roster accordion toggle with lazy-load 
     var rosterCache = {};
 
     document.querySelectorAll('.trainer-roster-toggle').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            var item      = btn.closest('.trainer-roster-item');
+            var item = btn.closest('.trainer-roster-item');
             var sessionId = btn.dataset.sessionId;
-            var panel     = item.querySelector('.trainer-roster-panel');
-            var isOpen    = item.classList.contains('trainer-roster-item--open');
+            var panel = item.querySelector('.trainer-roster-panel');
+            var isOpen = item.classList.contains('trainer-roster-item--open');
 
-            // close all others
             document.querySelectorAll('.trainer-roster-item--open').forEach(function (open) {
                 if (open !== item) open.classList.remove('trainer-roster-item--open');
             });
@@ -22,13 +20,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             item.classList.add('trainer-roster-item--open');
 
-            // already loaded?
             if (rosterCache[sessionId]) {
                 renderRoster(panel, rosterCache[sessionId]);
                 return;
             }
 
-            // show loading
             panel.innerHTML = '<p class="trainer-roster-panel__loading">Loading roster…</p>';
 
             fetch('/api/trainer/roster.php?session_id=' + encodeURIComponent(sessionId))
@@ -61,17 +57,17 @@ document.addEventListener('DOMContentLoaded', function () {
             var attendedLabel = m.attended == 1 ? 'Attended' : 'Pending';
 
             html += '<li class="trainer-roster-member">'
-                  + '  <div>'
-                  + '    <span class="trainer-roster-member__name">' + escapeHtml(m.name) + '</span>'
-                  + '    <span class="trainer-roster-member__user">@' + escapeHtml(m.username) + '</span>'
-                  + '  </div>'
-                  + '  <div style="display:flex;align-items:center;gap:0.75rem;">'
-                  + '    <button type="button" class="trainer-roster-member__status-btn ' + attendedClass + '" data-enrollment-id="' + m.enrollment_id + '" data-attended="' + m.attended + '">'
-                  +        attendedLabel
-                  + '    </button>'
-                  + '    <span class="trainer-roster-member__date">' + escapeHtml(m.enrolled_at) + '</span>'
-                  + '  </div>'
-                  + '</li>';
+                + '  <div>'
+                + '    <span class="trainer-roster-member__name">' + escapeHtml(m.name) + '</span>'
+                + '    <span class="trainer-roster-member__user">@' + escapeHtml(m.username) + '</span>'
+                + '  </div>'
+                + '  <div style="display:flex;align-items:center;gap:0.75rem;">'
+                + '    <button type="button" class="trainer-roster-member__status-btn ' + attendedClass + '" data-enrollment-id="' + m.enrollment_id + '" data-attended="' + m.attended + '">'
+                + attendedLabel
+                + '    </button>'
+                + '    <span class="trainer-roster-member__date">' + escapeHtml(m.enrolled_at) + '</span>'
+                + '  </div>'
+                + '</li>';
         });
         html += '</ul>';
         panel.innerHTML = html;
@@ -84,11 +80,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return div.innerHTML;
     }
 
-    // ── Session status actions (complete / cancel / reactivate) ─────
     document.querySelectorAll('.schedule-action-btn[data-action]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var sessionId = btn.dataset.sessionId;
-            var action    = btn.dataset.action;
+            var action = btn.dataset.action;
 
             btn.disabled = true;
 
@@ -105,39 +100,34 @@ document.addEventListener('DOMContentLoaded', function () {
                         btn.disabled = false;
                         return;
                     }
-                    // update the row
                     var row = document.querySelector('.schedule-row[data-session-id="' + sessionId + '"]');
                     if (row) {
                         row.dataset.status = data.status;
-                        // update status badge
                         var badge = row.querySelector('.schedule-status');
                         if (badge) {
                             badge.className = 'schedule-status schedule-status--' + data.status;
                             badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
                         }
-                        // swap action buttons
                         var actionsCell = row.querySelector('.schedule-actions');
                         if (actionsCell) {
                             var notesBtn = '<button type="button" class="schedule-action-btn schedule-action-btn--notes" '
-                                         + 'data-session-id="' + sessionId + '" title="Edit notes">✎</button>';
+                                + 'data-session-id="' + sessionId + '" title="Edit notes">✎</button>';
                             if (data.status === 'scheduled') {
                                 actionsCell.innerHTML =
                                     '<button type="button" class="schedule-action-btn schedule-action-btn--complete" '
-                                  + 'data-session-id="' + sessionId + '" data-action="complete" title="Mark as completed">✓</button>'
-                                  + '<button type="button" class="schedule-action-btn schedule-action-btn--cancel" '
-                                  + 'data-session-id="' + sessionId + '" data-action="cancel" title="Cancel session">✕</button>'
-                                  + notesBtn;
+                                    + 'data-session-id="' + sessionId + '" data-action="complete" title="Mark as completed">✓</button>'
+                                    + '<button type="button" class="schedule-action-btn schedule-action-btn--cancel" '
+                                    + 'data-session-id="' + sessionId + '" data-action="cancel" title="Cancel session">✕</button>'
+                                    + notesBtn;
                             } else {
                                 actionsCell.innerHTML =
                                     '<button type="button" class="schedule-action-btn schedule-action-btn--reactivate" '
-                                  + 'data-session-id="' + sessionId + '" data-action="reactivate" title="Reactivate session">↺</button>'
-                                  + notesBtn;
+                                    + 'data-session-id="' + sessionId + '" data-action="reactivate" title="Reactivate session">↺</button>'
+                                    + notesBtn;
                             }
-                            // re-bind new buttons
                             actionsCell.querySelectorAll('.schedule-action-btn[data-action]').forEach(function (b) {
                                 b.addEventListener('click', arguments.callee);
                             }.bind(null));
-                            // re-bind action listeners on new buttons
                             rebindActionButtons(actionsCell);
                             rebindNotesButtons(actionsCell);
                         }
@@ -154,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
         container.querySelectorAll('.schedule-action-btn[data-action]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var sessionId = btn.dataset.sessionId;
-                var action    = btn.dataset.action;
+                var action = btn.dataset.action;
                 btn.disabled = true;
 
                 var body = new FormData();
@@ -181,12 +171,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ── Notes toggle & save ────────────────────────────────────────
     function toggleNotes(sessionId) {
         var notesRow = document.querySelector('.schedule-notes-row[data-session-id="' + sessionId + '"]');
         if (!notesRow) return;
         var visible = notesRow.style.display !== 'none';
-        // close all other notes rows
         document.querySelectorAll('.schedule-notes-row').forEach(function (r) {
             r.style.display = 'none';
         });
@@ -211,9 +199,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.schedule-notes-save').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var sessionId = btn.dataset.sessionId;
-            var notesRow  = btn.closest('.schedule-notes-row');
-            var textarea  = notesRow.querySelector('.schedule-notes-input');
-            var notes     = textarea ? textarea.value : '';
+            var notesRow = btn.closest('.schedule-notes-row');
+            var textarea = notesRow.querySelector('.schedule-notes-input');
+            var notes = textarea ? textarea.value : '';
 
             btn.disabled = true;
 
@@ -228,7 +216,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(function (data) {
                     btn.disabled = false;
                     if (!data.ok) { alert(data.msg); return; }
-                    // brief success feedback
                     btn.textContent = 'Saved ✓';
                     setTimeout(function () {
                         btn.textContent = 'Save Notes';
@@ -239,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ── Toggle user attendance click listener ────────────────────────
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.trainer-roster-member__status-btn');
         if (!btn || btn.disabled) return;
@@ -271,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 btn.classList.toggle('trainer-roster-member__status-btn--yes', nowAttended);
                 btn.classList.toggle('trainer-roster-member__status-btn--no', !nowAttended);
 
-                // Update rosterCache local state
                 var item = btn.closest('.trainer-roster-item');
                 var toggleBtn = item ? item.querySelector('.trainer-roster-toggle') : null;
                 var sessionId = toggleBtn ? toggleBtn.dataset.sessionId : null;

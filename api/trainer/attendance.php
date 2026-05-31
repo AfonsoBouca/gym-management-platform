@@ -9,7 +9,6 @@ function json_out(bool $ok, string $msg, array $extra = []): never {
     exit;
 }
 
-// auth: must be logged-in trainer
 if (empty($_SESSION['user_id'])) {
     http_response_code(401);
     json_out(false, 'Login required.');
@@ -25,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_out(false, 'Method not allowed.');
 }
 
-// CSRF
 if (!csrf_verify($_POST['csrf_token'] ?? '')) {
     http_response_code(403);
     json_out(false, 'Invalid request.');
@@ -41,7 +39,6 @@ if ($enrollment_id <= 0 || ($attended !== 0 && $attended !== 1)) {
     json_out(false, 'Invalid parameters.');
 }
 
-// verify ownership: enrollment -> session -> class -> trainer_id 
 $stmt = $pdo->prepare("
     SELECT e.id
     FROM enrollments e
@@ -56,7 +53,6 @@ if (!$stmt->fetch()) {
     json_out(false, 'You do not own this session roster.');
 }
 
-// update attended status
 $stmt = $pdo->prepare("UPDATE enrollments SET attended = :attended WHERE id = :eid");
 $stmt->execute([':attended' => $attended, ':eid' => $enrollment_id]);
 

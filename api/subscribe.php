@@ -35,7 +35,6 @@ $pdo = get_db();
 $member_id = (int)$_SESSION['user_id'];
 
 if ($plan_id === 0) {
-    // Check if they have an active subscription
     $stmt = $pdo->prepare("SELECT id FROM member_subscriptions WHERE member_id = ? AND status = 'active'");
     $stmt->execute([$member_id]);
     if (!$stmt->fetch()) {
@@ -68,7 +67,6 @@ if ($plan_id < 0) {
     json_out(false, 'Invalid parameters.');
 }
 
-// Check if the plan exists and is active
 $stmt = $pdo->prepare("SELECT id, name FROM membership_plans WHERE id = ? AND is_active = 1");
 $stmt->execute([$plan_id]);
 $plan = $stmt->fetch();
@@ -81,7 +79,6 @@ if (!$plan) {
 try {
     $pdo->beginTransaction();
 
-    // 1. Deactivate current active subscription
     $stmt = $pdo->prepare("
         UPDATE member_subscriptions 
         SET status = 'cancelled', end_date = CURRENT_TIMESTAMP 
@@ -89,7 +86,6 @@ try {
     ");
     $stmt->execute([$member_id]);
 
-    // 2. Insert new active subscription
     $stmt = $pdo->prepare("
         INSERT INTO member_subscriptions (member_id, plan_id, status, start_date)
         VALUES (?, ?, 'active', CURRENT_TIMESTAMP)

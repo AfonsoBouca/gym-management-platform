@@ -83,7 +83,6 @@ function promote_first_waitlisted(PDO $pdo, int $session_id): bool {
         WHERE id = ?
     ")->execute([$first['id']]);
 
-    // re-number remaining waitlisted positions
     $pdo->prepare("
         UPDATE enrollments SET waitlist_pos = waitlist_pos - 1
         WHERE session_id = ? AND status = 'waitlisted'
@@ -93,14 +92,12 @@ function promote_first_waitlisted(PDO $pdo, int $session_id): bool {
 }
 
 if ($action === 'enroll') {
-    // Check if already enrolled in this session
     $stmt = $pdo->prepare("SELECT status FROM enrollments WHERE member_id = ? AND session_id = ?");
     $stmt->execute([$member_id, $session_id]);
     $existing = $stmt->fetch();
     $is_already_enrolled = ($existing && $existing['status'] === 'enrolled');
 
     if (!$is_already_enrolled) {
-        // Fetch active plan
         $stmt = $pdo->prepare("
             SELECT mp.name AS plan_name, mp.features 
             FROM member_subscriptions ms
@@ -111,7 +108,6 @@ if ($action === 'enroll') {
         $stmt->execute([$member_id]);
         $active_sub = $stmt->fetch();
 
-        // Determine plan limit
         $plan_limit = 0;
         if ($active_sub) {
             $plan_name = $active_sub['plan_name'];
@@ -135,12 +131,10 @@ if ($action === 'enroll') {
             }
         }
 
-        // If no active plan, block enrollment
         if ($plan_limit === 0) {
             json_out(false, 'You do not have an active membership plan. Please subscribe to a plan to enroll in classes.');
         }
 
-        // If limited plan, check if the monthly limit was reached
         if ($plan_limit > 0) {
             $stmt = $pdo->prepare("
                 SELECT COUNT(*) 
@@ -162,7 +156,6 @@ if ($action === 'enroll') {
     $capacity = (int)$sess['capacity'];
 
     if ($count >= $capacity) {
-        // session is full — redirect to waitlist action
         json_out(false, 'This session is full. You can join the waitlist.', [
             'full'     => true,
             'count'    => $count,
@@ -183,7 +176,6 @@ if ($action === 'enroll') {
     ]);
 
 } elseif ($action === 'cancel') {
-    // cancel an enrolled member
     $stmt = $pdo->prepare("
         UPDATE enrollments SET status = 'cancelled'
         WHERE member_id = ? AND session_id = ? AND status = 'enrolled'
@@ -194,7 +186,6 @@ if ($action === 'enroll') {
         json_out(false, 'No active enrollment found.');
     }
 
-    // auto-promote the first waitlisted member
     $promoted = promote_first_waitlisted($pdo, $session_id);
 
     json_out(true, 'Enrollment cancelled.', [
@@ -205,7 +196,6 @@ if ($action === 'enroll') {
     ]);
 
 } elseif ($action === 'waitlist') {
-    // check if already enrolled or waitlisted
     $stmt = $pdo->prepare("SELECT status FROM enrollments WHERE member_id = ? AND session_id = ?");
     $stmt->execute([$member_id, $session_id]);
     $existing = $stmt->fetch();
@@ -220,7 +210,6 @@ if ($action === 'enroll') {
     $count = enrolled_count($pdo, $session_id);
     $capacity = (int)$sess['capacity'];
 
-    // if spots opened up, enroll directly instead
     if ($count < $capacity) {
         $pdo->prepare("
             INSERT INTO enrollments (member_id, session_id, status)
@@ -270,7 +259,6 @@ if ($action === 'enroll') {
         WHERE id = ?
     ")->execute([$row['id']]);
 
-    // re-number members who were behind this position
     $pdo->prepare("
         UPDATE enrollments SET waitlist_pos = waitlist_pos - 1
         WHERE session_id = ? AND status = 'waitlisted' AND waitlist_pos > ?

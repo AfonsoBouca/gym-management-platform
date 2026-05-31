@@ -9,7 +9,6 @@ function json_out(bool $ok, string $msg, array $extra = []): never {
     exit;
 }
 
-// ── auth: must be logged-in trainer ────────────────────────────────
 if (empty($_SESSION['user_id'])) {
     http_response_code(401);
     json_out(false, 'Login required.');
@@ -25,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_out(false, 'Method not allowed.');
 }
 
-// ── CSRF ───────────────────────────────────────────────────────────
 if (!csrf_verify($_POST['csrf_token'] ?? '')) {
     http_response_code(403);
     json_out(false, 'Invalid request.');
@@ -46,7 +44,6 @@ if (!in_array($action, ['complete', 'cancel', 'reactivate', 'save_notes'], true)
     json_out(false, 'Invalid action.');
 }
 
-// ── verify ownership: session → class → trainer_id ────────────────
 $stmt = $pdo->prepare("
     SELECT s.id
     FROM sessions s
@@ -60,8 +57,6 @@ if (!$stmt->fetch()) {
     json_out(false, 'You do not own this session.');
 }
 
-// ── ensure status and notes columns exist (safe migration) ────────
-// SQLite doesn't support IF NOT EXISTS for ALTER TABLE, so we check pragma
 $columns = $pdo->query("PRAGMA table_info(sessions)")->fetchAll();
 $col_names = array_column($columns, 'name');
 
@@ -72,7 +67,6 @@ if (!in_array('notes', $col_names, true)) {
     $pdo->exec("ALTER TABLE sessions ADD COLUMN notes TEXT");
 }
 
-// ── perform action ────────────────────────────────────────────────
 if ($action === 'complete') {
     $stmt = $pdo->prepare("UPDATE sessions SET status = 'completed' WHERE id = ?");
     $stmt->execute([$session_id]);

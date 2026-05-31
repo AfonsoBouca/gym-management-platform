@@ -1,23 +1,20 @@
 
-/* DOM refs */
-const viewList      = document.getElementById('view-list');
+const viewList = document.getElementById('view-list');
 const viewTimetable = document.getElementById('view-timetable');
-const toggleBtns    = document.querySelectorAll('.view-toggle__btn');
-const filterGroups  = document.querySelectorAll('.filters__group');
-const cards         = document.querySelectorAll('.crow');
-const switcherBtns  = document.querySelectorAll('.class-switcher__btn');
-const ttCells       = document.querySelectorAll('.timetable__cell');
-const bookBtns      = document.querySelectorAll('.crow__book-btn');
-const selectType    = document.getElementById('filter-type');
+const toggleBtns = document.querySelectorAll('.view-toggle__btn');
+const filterGroups = document.querySelectorAll('.filters__group');
+const cards = document.querySelectorAll('.crow');
+const switcherBtns = document.querySelectorAll('.class-switcher__btn');
+const ttCells = document.querySelectorAll('.timetable__cell');
+const bookBtns = document.querySelectorAll('.crow__book-btn');
+const selectType = document.getElementById('filter-type');
 const selectTrainer = document.getElementById('filter-trainer');
 
-//state
-let activeDay     = 'all';
-let activeTime    = 'all';
-let activeType    = 'all';
+let activeDay = 'all';
+let activeTime = 'all';
+let activeType = 'all';
 let activeTrainer = 'all';
 
-//  view toggle
 function switchView(view) {
     const isList = view === 'list';
 
@@ -30,7 +27,6 @@ function switchView(view) {
         btn.setAttribute('aria-selected', String(isActive));
     });
 
-    // update URL without reload
     const url = new URL(window.location);
     if (isList) {
         url.searchParams.delete('class');
@@ -43,7 +39,6 @@ toggleBtns.forEach(btn => {
 });
 
 
-// card group filters
 function filterCards() {
     cards.forEach(card => {
         const cardDays = card.dataset.days.split(',');
@@ -51,9 +46,9 @@ function filterCards() {
         const cardType = card.dataset.className;
         const cardTrainer = card.dataset.trainerId;
 
-        const dayOk     = activeDay  === 'all' || cardDays.includes(activeDay);
-        const timeOk    = activeTime === 'all' || cardTime === activeTime;
-        const typeOk    = activeType === 'all' || cardType === activeType;
+        const dayOk = activeDay === 'all' || cardDays.includes(activeDay);
+        const timeOk = activeTime === 'all' || cardTime === activeTime;
+        const typeOk = activeType === 'all' || cardType === activeType;
         const trainerOk = activeTrainer === 'all' || cardTrainer === activeTrainer;
 
         card.style.display = (dayOk && timeOk && typeOk && trainerOk) ? '' : 'none';
@@ -61,16 +56,15 @@ function filterCards() {
 }
 
 filterGroups.forEach(group => {
-    const filterType = group.dataset.filter;          // 'day' | 'time'
-    const btns       = group.querySelectorAll('.filter-btn');
+    const filterType = group.dataset.filter;
+    const btns = group.querySelectorAll('.filter-btn');
 
     btns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // activate this button, deactivate siblings
             btns.forEach(b => b.classList.remove('filter-btn--active'));
             btn.classList.add('filter-btn--active');
 
-            if (filterType === 'day')  activeDay  = btn.dataset.value;
+            if (filterType === 'day') activeDay = btn.dataset.value;
             if (filterType === 'time') activeTime = btn.dataset.value;
 
             filterCards();
@@ -93,11 +87,9 @@ if (selectTrainer) {
 }
 
 
-// timetable class switcher
 function highlightClass(classId) {
     const id = Number(classId);
 
-    // update switcher buttons
     switcherBtns.forEach(btn => {
         btn.classList.toggle(
             'class-switcher__btn--active',
@@ -105,12 +97,10 @@ function highlightClass(classId) {
         );
     });
 
-    // update timetable cells
     ttCells.forEach(cell => {
         const cellClass = Number(cell.dataset.classId);
 
         if (id === 0) {
-            // "All" — show everything equally
             cell.classList.remove('timetable__cell--active', 'timetable__cell--dim');
         } else if (cellClass === id) {
             cell.classList.add('timetable__cell--active');
@@ -121,7 +111,6 @@ function highlightClass(classId) {
         }
     });
 
-    // update URL
     const url = new URL(window.location);
     if (id === 0) {
         url.searchParams.delete('class');
@@ -135,13 +124,11 @@ switcherBtns.forEach(btn => {
     btn.addEventListener('click', () => highlightClass(btn.dataset.classId));
 });
 
-// clicking a timetable cell also highlights its class
 ttCells.forEach(cell => {
     cell.addEventListener('click', () => highlightClass(cell.dataset.classId));
 });
 
 
-// clicking a book/enroll button opens timetable and highlights the class
 bookBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -151,7 +138,6 @@ bookBtns.forEach(btn => {
     });
 });
 
-// clicking the card itself (not the button) also opens timetable
 cards.forEach(card => {
     card.addEventListener('click', (e) => {
         if (e.target.closest('.crow__book-btn') || e.target.closest('.crow__enroll-btn') || e.target.closest('.crow__login-prompt')) return;
@@ -167,21 +153,19 @@ document.addEventListener('click', e => {
     if (!btn || btn.disabled) return;
     e.stopPropagation();
 
-    const sessionId    = btn.dataset.sessionId;
-    const isEnrolled   = btn.dataset.enrolled === '1';
+    const sessionId = btn.dataset.sessionId;
+    const isEnrolled = btn.dataset.enrolled === '1';
     const isWaitlisted = btn.dataset.waitlisted === '1';
 
-    // determine action based on current state
     let action;
     if (isEnrolled) {
         action = 'cancel';
     } else if (isWaitlisted) {
         action = 'leave_waitlist';
     } else {
-        // check if session is full by reading the spots text
-        const row     = btn.closest('.crow__session-row');
+        const row = btn.closest('.crow__session-row');
         const spotsEl = row?.querySelector('.crow__spots');
-        const isFull  = spotsEl && (spotsEl.textContent.trim() === 'Full' || spotsEl.classList.contains('crow__spots--full'));
+        const isFull = spotsEl && (spotsEl.textContent.trim() === 'Full' || spotsEl.classList.contains('crow__spots--full'));
         action = isFull ? 'waitlist' : 'enroll';
     }
 
@@ -196,7 +180,6 @@ document.addEventListener('click', e => {
         .then(r => r.json())
         .then(data => {
             if (!data.ok) {
-                // if enroll failed because full, offer waitlist
                 if (data.full) {
                     btn.disabled = false;
                     btn.dataset.enrolled = '0';
@@ -204,7 +187,7 @@ document.addEventListener('click', e => {
                     btn.textContent = 'Join Waitlist';
                     btn.classList.remove('crow__enroll-btn--enrolled', 'crow__enroll-btn--waitlisted');
 
-                    const row     = btn.closest('.crow__session-row');
+                    const row = btn.closest('.crow__session-row');
                     const spotsEl = row?.querySelector('.crow__spots');
                     if (spotsEl) {
                         spotsEl.textContent = 'Full';
@@ -217,11 +200,10 @@ document.addEventListener('click', e => {
                 return;
             }
 
-            const row     = btn.closest('.crow__session-row');
+            const row = btn.closest('.crow__session-row');
             const spotsEl = row?.querySelector('.crow__spots');
 
             if (data.waitlisted) {
-                // joined waitlist
                 btn.dataset.enrolled = '0';
                 btn.dataset.waitlisted = '1';
                 btn.dataset.waitlistPos = data.waitlist_pos;
@@ -236,7 +218,6 @@ document.addEventListener('click', e => {
                 btn.disabled = false;
 
             } else if (data.enrolled) {
-                // enrolled (directly or via waitlist auto-enroll)
                 btn.dataset.enrolled = '1';
                 btn.dataset.waitlisted = '0';
                 btn.textContent = 'Cancel';
@@ -250,7 +231,6 @@ document.addEventListener('click', e => {
                 btn.disabled = false;
 
             } else {
-                // cancelled or left waitlist
                 btn.dataset.enrolled = '0';
                 btn.dataset.waitlisted = '0';
                 btn.classList.remove('crow__enroll-btn--enrolled', 'crow__enroll-btn--waitlisted');

@@ -145,7 +145,6 @@
     margin-top: 0.5rem;
 }
 
-/* ── schedule status badges ──────────────────────────────────────── */
 .schedule-status {
     font-family: var(--font-mono);
     font-size: 0.68rem;
@@ -174,7 +173,6 @@
     color: #e05a5a;
 }
 
-/* dim non-scheduled rows */
 .schedule-row[data-status="completed"],
 .schedule-row[data-status="cancelled"] {
     opacity: 0.55;
@@ -185,7 +183,6 @@
     opacity: 1;
 }
 
-/* ── schedule action buttons ─────────────────────────────────────── */
 .schedule-actions {
     display: flex;
     gap: 0.35rem;
@@ -238,7 +235,6 @@
     cursor: not-allowed;
 }
 
-/* ── schedule notes editor row ───────────────────────────────────── */
 .schedule-notes-row td {
     padding: 0 1rem 1rem;
     white-space: normal;
