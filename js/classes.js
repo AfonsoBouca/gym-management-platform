@@ -1,14 +1,5 @@
-/**
- * js/classes.js
- *
- * Client-side logic for the classes page:
- *  1. View toggle  (grid ↔ timetable)
- *  2. Card grid filtering  (day / time)
- *  3. Timetable class-switcher  (highlight one class)
- *  4. Card "View Schedule" → timetable with highlight
- */
 
-/* ── DOM refs ───────────────────────────────────────────────────── */
+/* DOM refs */
 const viewList      = document.getElementById('view-list');
 const viewTimetable = document.getElementById('view-timetable');
 const toggleBtns    = document.querySelectorAll('.view-toggle__btn');
@@ -20,15 +11,13 @@ const bookBtns      = document.querySelectorAll('.crow__book-btn');
 const selectType    = document.getElementById('filter-type');
 const selectTrainer = document.getElementById('filter-trainer');
 
-/* ── state ──────────────────────────────────────────────────────── */
+//state
 let activeDay     = 'all';
 let activeTime    = 'all';
 let activeType    = 'all';
 let activeTrainer = 'all';
 
-/* ================================================================
-   1.  VIEW TOGGLE
-   ================================================================ */
+//  view toggle
 function switchView(view) {
     const isList = view === 'list';
 
@@ -54,9 +43,7 @@ toggleBtns.forEach(btn => {
 });
 
 
-/* ================================================================
-   2.  CARD GRID FILTERING
-   ================================================================ */
+// card group filters
 function filterCards() {
     cards.forEach(card => {
         const cardDays = card.dataset.days.split(',');
@@ -106,9 +93,7 @@ if (selectTrainer) {
 }
 
 
-/* ================================================================
-   3.  TIMETABLE CLASS SWITCHER
-   ================================================================ */
+// timetable class switcher
 function highlightClass(classId) {
     const id = Number(classId);
 
@@ -156,9 +141,7 @@ ttCells.forEach(cell => {
 });
 
 
-/* ================================================================
-   4.  CARD "VIEW SCHEDULE" → TIMETABLE
-   ================================================================ */
+// clicking a book/enroll button opens timetable and highlights the class
 bookBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
         e.stopPropagation();

@@ -8,7 +8,7 @@ require_role('trainer');
 $pdo        = get_db();
 $trainer_id = (int)$_SESSION['user_id'];
 
-// ── safe migration: ensure status & notes columns exist ───────────
+// safe migration: ensure status & notes columns exist 
 $columns = $pdo->query("PRAGMA table_info(sessions)")->fetchAll();
 $col_names = array_column($columns, 'name');
 if (!in_array('status', $col_names, true)) {
@@ -18,7 +18,7 @@ if (!in_array('notes', $col_names, true)) {
     $pdo->exec("ALTER TABLE sessions ADD COLUMN notes TEXT");
 }
 
-// ── fetch trainer's classes ───────────────────────────────────────
+// fetch trainer's classes 
 $stmt = $pdo->prepare("
     SELECT c.id, c.name, c.description, c.difficulty, c.duration_minutes, c.capacity
     FROM classes c
@@ -30,7 +30,7 @@ $classes = $stmt->fetchAll();
 
 $class_ids = array_column($classes, 'id');
 
-// ── fetch sessions for trainer's classes, ordered by day then time ─
+// fetch sessions for trainer's classes, ordered by day then time
 $sessions = [];
 if (!empty($class_ids)) {
     $placeholders = implode(',', array_fill(0, count($class_ids), '?'));
@@ -57,7 +57,7 @@ if (!empty($class_ids)) {
     $sessions = $stmt->fetchAll();
 }
 
-// ── fetch enrollment counts per session ───────────────────────────
+// fetch enrollment counts per session
 $enrollment_counts = [];
 if (!empty($sessions)) {
     $session_ids   = array_column($sessions, 'session_id');
@@ -74,7 +74,7 @@ if (!empty($sessions)) {
     }
 }
 
-// ── day labels ────────────────────────────────────────────────────
+// day labels
 $day_label = [
     'monday'    => 'Monday',
     'tuesday'   => 'Tuesday',
@@ -90,7 +90,7 @@ $day_abbr = [
     'thursday' => 'Thu', 'friday' => 'Fri', 'saturday' => 'Sat', 'sunday' => 'Sun',
 ];
 
-// ── page meta ─────────────────────────────────────────────────────
+// page meta
 $page_title       = 'Trainer Dashboard — Fitness Down';
 $page_description = 'Manage your profile, view your class schedule, and check enrolled members.';
 $extra_css        = '/css/pages/trainer.css';
@@ -103,7 +103,7 @@ include __DIR__ . '/../includes/header.php';
 
 <main class="trainer-dashboard">
 
-    <!-- ── hero ────────────────────────────────────────────────── -->
+    <!-- hero  -->
     <section class="profile-page__hero">
         <div class="profile-card">
             <div class="profile-card__body">
@@ -115,9 +115,7 @@ include __DIR__ . '/../includes/header.php';
     </section>
 
 
-    <!-- ════════════════════════════════════════════════════════════
-         SECTION 2 — MY SCHEDULE
-         ════════════════════════════════════════════════════════════ -->
+    <!-- my schedule -->
     <section class="trainer-section" id="trainer-schedule-section">
         <header class="trainer-section__header">
             <h2>My Schedule</h2>
@@ -203,9 +201,7 @@ include __DIR__ . '/../includes/header.php';
     </section>
 
 
-    <!-- ════════════════════════════════════════════════════════════
-         SECTION 3 — CLASS ROSTERS
-         ════════════════════════════════════════════════════════════ -->
+    <!-- class roster -->
     <section class="trainer-section" id="trainer-roster-section">
         <header class="trainer-section__header">
             <h2>Class Rosters</h2>
