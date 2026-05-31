@@ -70,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['role']     = 'member';
         $_SESSION['user_name'] = $name;
         $_SESSION['username'] = $username;
+        $_SESSION['server_token'] = SERVER_RUN_TOKEN;
 
         redirect_by_role('member');
     }

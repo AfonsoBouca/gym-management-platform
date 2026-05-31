@@ -44,8 +44,7 @@ $profile_photo = $user['profile_photo'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Invalid request. Please try again.';
-    }
-    if (!isset($_POST['progress_action']) && !isset($_POST['booking_action'])) {
+    } elseif (!isset($_POST['progress_action']) && !isset($_POST['booking_action'])) {
     $name = trim($_POST['name'] ?? '');
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
