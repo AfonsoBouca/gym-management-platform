@@ -59,6 +59,7 @@ while ($row = $stmt->fetch()) {
 
 // enrolled sessions for logged-in member
 $enrolled_sessions = [];
+$waitlisted_sessions = []; // session_id => waitlist_pos
 if (!empty($_SESSION['user_id'])) {
     $stmt = $pdo->prepare("
         SELECT session_id FROM enrollments
@@ -66,6 +67,15 @@ if (!empty($_SESSION['user_id'])) {
     ");
     $stmt->execute([$_SESSION['user_id']]);
     $enrolled_sessions = array_column($stmt->fetchAll(), 'session_id');
+
+    $stmt = $pdo->prepare("
+        SELECT session_id, waitlist_pos FROM enrollments
+        WHERE member_id = ? AND status = 'waitlisted'
+    ");
+    $stmt->execute([$_SESSION['user_id']]);
+    while ($row = $stmt->fetch()) {
+        $waitlisted_sessions[(int)$row['session_id']] = (int)$row['waitlist_pos'];
+    }
 }
 
 $enrollment_counts = [];
@@ -281,6 +291,8 @@ require __DIR__ . '/includes/header.php';
                             <?php foreach ($cls_sessions as $sess):
                                 $sess_id    = (int)$sess['id'];
                                 $is_enrolled = in_array($sess_id, $enrolled_sessions, true);
+                                $is_waitlisted = isset($waitlisted_sessions[$sess_id]);
+                                $wl_pos     = $waitlisted_sessions[$sess_id] ?? 0;
                                 $count      = $enrollment_counts[$sess_id] ?? 0;
                                 $capacity   = (int)$cls['capacity'];
                                 $free       = $capacity - $count;
@@ -290,19 +302,47 @@ require __DIR__ . '/includes/header.php';
                                     <span class="crow__session-day"><?= e($day_abbr[$sess['day_of_week']] ?? $sess['day_of_week']) ?></span>
                                     <span class="crow__session-time"><?= e($sess['start_time']) ?></span>
                                 </div>
-                                <span class="crow__spots <?= $free <= 0 && !$is_enrolled ? 'crow__spots--full' : '' ?>">
+                                <span class="crow__spots <?= $is_waitlisted ? 'crow__spots--waitlisted' : ($free <= 0 && !$is_enrolled ? 'crow__spots--full' : '') ?>">
                                     <?php if ($is_enrolled): ?>Enrolled
+                                    <?php elseif ($is_waitlisted): ?>Waitlisted (#<?= $wl_pos ?>)
                                     <?php elseif ($free <= 0): ?>Full
                                     <?php else: ?><?= $free ?> spot<?= $free === 1 ? '' : 's' ?> left
                                     <?php endif; ?>
                                 </span>
+                                <?php if ($is_enrolled): ?>
                                 <button type="button"
-                                        class="button button--ghost crow__enroll-btn <?= $is_enrolled ? 'crow__enroll-btn--enrolled' : '' ?>"
+                                        class="button button--ghost crow__enroll-btn crow__enroll-btn--enrolled"
                                         data-session-id="<?= $sess_id ?>"
-                                        data-enrolled="<?= $is_enrolled ? '1' : '0' ?>"
-                                        <?= ($free <= 0 && !$is_enrolled) ? 'disabled' : '' ?>>
-                                    <?= $is_enrolled ? 'Cancel' : 'Enroll' ?>
+                                        data-enrolled="1"
+                                        data-waitlisted="0">
+                                    Cancel
                                 </button>
+                                <?php elseif ($is_waitlisted): ?>
+                                <button type="button"
+                                        class="button button--ghost crow__enroll-btn crow__enroll-btn--waitlisted"
+                                        data-session-id="<?= $sess_id ?>"
+                                        data-enrolled="0"
+                                        data-waitlisted="1"
+                                        data-waitlist-pos="<?= $wl_pos ?>">
+                                    Leave Waitlist
+                                </button>
+                                <?php elseif ($free <= 0): ?>
+                                <button type="button"
+                                        class="button button--ghost crow__enroll-btn"
+                                        data-session-id="<?= $sess_id ?>"
+                                        data-enrolled="0"
+                                        data-waitlisted="0">
+                                    Join Waitlist
+                                </button>
+                                <?php else: ?>
+                                <button type="button"
+                                        class="button button--ghost crow__enroll-btn"
+                                        data-session-id="<?= $sess_id ?>"
+                                        data-enrolled="0"
+                                        data-waitlisted="0">
+                                    Enroll
+                                </button>
+                                <?php endif; ?>
                             </div>
                             <?php endforeach; ?>
                         </div>

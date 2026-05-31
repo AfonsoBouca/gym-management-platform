@@ -27,7 +27,7 @@ if (!csrf_verify($_POST['csrf_token'] ?? '')) {
 $session_id = (int)($_POST['session_id'] ?? 0);
 $action     = $_POST['action'] ?? '';
 
-if ($session_id <= 0 || !in_array($action, ['enroll', 'cancel'], true)) {
+if ($session_id <= 0 || !in_array($action, ['enroll', 'cancel', 'waitlist', 'leave_waitlist'], true)) {
     http_response_code(400);
     json_out(false, 'Invalid parameters.');
 }
@@ -53,6 +53,43 @@ function enrolled_count(PDO $pdo, int $session_id): int {
     $s = $pdo->prepare("SELECT COUNT(*) FROM enrollments WHERE session_id = ? AND status = 'enrolled'");
     $s->execute([$session_id]);
     return (int)$s->fetchColumn();
+}
+
+function waitlist_count(PDO $pdo, int $session_id): int {
+    $s = $pdo->prepare("SELECT COUNT(*) FROM enrollments WHERE session_id = ? AND status = 'waitlisted'");
+    $s->execute([$session_id]);
+    return (int)$s->fetchColumn();
+}
+
+function next_waitlist_pos(PDO $pdo, int $session_id): int {
+    $s = $pdo->prepare("SELECT COALESCE(MAX(waitlist_pos), 0) + 1 FROM enrollments WHERE session_id = ? AND status = 'waitlisted'");
+    $s->execute([$session_id]);
+    return (int)$s->fetchColumn();
+}
+
+function promote_first_waitlisted(PDO $pdo, int $session_id): bool {
+    $s = $pdo->prepare("
+        SELECT id, member_id FROM enrollments
+        WHERE session_id = ? AND status = 'waitlisted'
+        ORDER BY waitlist_pos ASC
+        LIMIT 1
+    ");
+    $s->execute([$session_id]);
+    $first = $s->fetch();
+    if (!$first) return false;
+
+    $pdo->prepare("
+        UPDATE enrollments SET status = 'enrolled', waitlist_pos = NULL
+        WHERE id = ?
+    ")->execute([$first['id']]);
+
+    // re-number remaining waitlisted positions
+    $pdo->prepare("
+        UPDATE enrollments SET waitlist_pos = waitlist_pos - 1
+        WHERE session_id = ? AND status = 'waitlisted'
+    ")->execute([$session_id]);
+
+    return true;
 }
 
 if ($action === 'enroll') {
@@ -122,12 +159,14 @@ if ($action === 'enroll') {
     }
 
     $count = enrolled_count($pdo, $session_id);
+    $capacity = (int)$sess['capacity'];
 
-    if ($count >= (int)$sess['capacity']) {
-        json_out(false, 'This session is full.', [
+    if ($count >= $capacity) {
+        // session is full — redirect to waitlist action
+        json_out(false, 'This session is full. You can join the waitlist.', [
             'full'     => true,
             'count'    => $count,
-            'capacity' => (int)$sess['capacity'],
+            'capacity' => $capacity,
         ]);
     }
 
@@ -140,10 +179,11 @@ if ($action === 'enroll') {
     json_out(true, 'Enrolled!', [
         'enrolled' => true,
         'count'    => enrolled_count($pdo, $session_id),
-        'capacity' => (int)$sess['capacity'],
+        'capacity' => $capacity,
     ]);
 
-} else {
+} elseif ($action === 'cancel') {
+    // cancel an enrolled member
     $stmt = $pdo->prepare("
         UPDATE enrollments SET status = 'cancelled'
         WHERE member_id = ? AND session_id = ? AND status = 'enrolled'
@@ -154,9 +194,91 @@ if ($action === 'enroll') {
         json_out(false, 'No active enrollment found.');
     }
 
+    // auto-promote the first waitlisted member
+    $promoted = promote_first_waitlisted($pdo, $session_id);
+
     json_out(true, 'Enrollment cancelled.', [
-        'enrolled' => false,
-        'count'    => enrolled_count($pdo, $session_id),
-        'capacity' => (int)$sess['capacity'],
+        'enrolled'  => false,
+        'count'     => enrolled_count($pdo, $session_id),
+        'capacity'  => (int)$sess['capacity'],
+        'promoted'  => $promoted,
+    ]);
+
+} elseif ($action === 'waitlist') {
+    // check if already enrolled or waitlisted
+    $stmt = $pdo->prepare("SELECT status FROM enrollments WHERE member_id = ? AND session_id = ?");
+    $stmt->execute([$member_id, $session_id]);
+    $existing = $stmt->fetch();
+
+    if ($existing && $existing['status'] === 'enrolled') {
+        json_out(false, 'You are already enrolled in this session.');
+    }
+    if ($existing && $existing['status'] === 'waitlisted') {
+        json_out(false, 'You are already on the waitlist.');
+    }
+
+    $count = enrolled_count($pdo, $session_id);
+    $capacity = (int)$sess['capacity'];
+
+    // if spots opened up, enroll directly instead
+    if ($count < $capacity) {
+        $pdo->prepare("
+            INSERT INTO enrollments (member_id, session_id, status)
+            VALUES (?, ?, 'enrolled')
+            ON CONFLICT (member_id, session_id) DO UPDATE SET status = 'enrolled', waitlist_pos = NULL
+        ")->execute([$member_id, $session_id]);
+
+        json_out(true, 'A spot opened up — you have been enrolled!', [
+            'enrolled'   => true,
+            'waitlisted' => false,
+            'count'      => enrolled_count($pdo, $session_id),
+            'capacity'   => $capacity,
+        ]);
+    }
+
+    $pos = next_waitlist_pos($pdo, $session_id);
+
+    $pdo->prepare("
+        INSERT INTO enrollments (member_id, session_id, status, waitlist_pos)
+        VALUES (?, ?, 'waitlisted', ?)
+        ON CONFLICT (member_id, session_id) DO UPDATE SET status = 'waitlisted', waitlist_pos = ?
+    ")->execute([$member_id, $session_id, $pos, $pos]);
+
+    json_out(true, "You've been added to the waitlist (#$pos).", [
+        'waitlisted'   => true,
+        'waitlist_pos' => $pos,
+        'count'        => enrolled_count($pdo, $session_id),
+        'capacity'     => $capacity,
+    ]);
+
+} elseif ($action === 'leave_waitlist') {
+    $stmt = $pdo->prepare("
+        SELECT id, waitlist_pos FROM enrollments
+        WHERE member_id = ? AND session_id = ? AND status = 'waitlisted'
+    ");
+    $stmt->execute([$member_id, $session_id]);
+    $row = $stmt->fetch();
+
+    if (!$row) {
+        json_out(false, 'You are not on the waitlist for this session.');
+    }
+
+    $old_pos = (int)$row['waitlist_pos'];
+
+    $pdo->prepare("
+        UPDATE enrollments SET status = 'cancelled', waitlist_pos = NULL
+        WHERE id = ?
+    ")->execute([$row['id']]);
+
+    // re-number members who were behind this position
+    $pdo->prepare("
+        UPDATE enrollments SET waitlist_pos = waitlist_pos - 1
+        WHERE session_id = ? AND status = 'waitlisted' AND waitlist_pos > ?
+    ")->execute([$session_id, $old_pos]);
+
+    json_out(true, 'You have left the waitlist.', [
+        'waitlisted' => false,
+        'count'      => enrolled_count($pdo, $session_id),
+        'capacity'   => (int)$sess['capacity'],
     ]);
 }

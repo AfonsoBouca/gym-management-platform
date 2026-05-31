@@ -184,9 +184,23 @@ document.addEventListener('click', e => {
     if (!btn || btn.disabled) return;
     e.stopPropagation();
 
-    const sessionId  = btn.dataset.sessionId;
-    const isEnrolled = btn.dataset.enrolled === '1';
-    const action     = isEnrolled ? 'cancel' : 'enroll';
+    const sessionId    = btn.dataset.sessionId;
+    const isEnrolled   = btn.dataset.enrolled === '1';
+    const isWaitlisted = btn.dataset.waitlisted === '1';
+
+    // determine action based on current state
+    let action;
+    if (isEnrolled) {
+        action = 'cancel';
+    } else if (isWaitlisted) {
+        action = 'leave_waitlist';
+    } else {
+        // check if session is full by reading the spots text
+        const row     = btn.closest('.crow__session-row');
+        const spotsEl = row?.querySelector('.crow__spots');
+        const isFull  = spotsEl && (spotsEl.textContent.trim() === 'Full' || spotsEl.classList.contains('crow__spots--full'));
+        action = isFull ? 'waitlist' : 'enroll';
+    }
 
     btn.disabled = true;
 
@@ -199,33 +213,81 @@ document.addEventListener('click', e => {
         .then(r => r.json())
         .then(data => {
             if (!data.ok) {
+                // if enroll failed because full, offer waitlist
+                if (data.full) {
+                    btn.disabled = false;
+                    btn.dataset.enrolled = '0';
+                    btn.dataset.waitlisted = '0';
+                    btn.textContent = 'Join Waitlist';
+                    btn.classList.remove('crow__enroll-btn--enrolled', 'crow__enroll-btn--waitlisted');
+
+                    const row     = btn.closest('.crow__session-row');
+                    const spotsEl = row?.querySelector('.crow__spots');
+                    if (spotsEl) {
+                        spotsEl.textContent = 'Full';
+                        spotsEl.className = 'crow__spots crow__spots--full';
+                    }
+                    return;
+                }
                 alert(data.msg);
                 btn.disabled = false;
                 return;
             }
 
-            const nowEnrolled = data.enrolled;
-            btn.dataset.enrolled = nowEnrolled ? '1' : '0';
-            btn.textContent = nowEnrolled ? 'Cancel' : 'Enroll';
-            btn.classList.toggle('crow__enroll-btn--enrolled', nowEnrolled);
-
             const row     = btn.closest('.crow__session-row');
             const spotsEl = row?.querySelector('.crow__spots');
-            if (spotsEl && data.capacity != null) {
-                const free = data.capacity - data.count;
-                if (nowEnrolled) {
-                    spotsEl.textContent = 'Enrolled';
-                    spotsEl.classList.remove('crow__spots--full');
-                } else if (free <= 0) {
-                    spotsEl.textContent = 'Full';
-                    spotsEl.classList.add('crow__spots--full');
-                } else {
-                    spotsEl.textContent = `${free} spot${free === 1 ? '' : 's'} left`;
-                    spotsEl.classList.remove('crow__spots--full');
-                }
-            }
 
-            btn.disabled = nowEnrolled ? false : (data.count >= data.capacity);
+            if (data.waitlisted) {
+                // joined waitlist
+                btn.dataset.enrolled = '0';
+                btn.dataset.waitlisted = '1';
+                btn.dataset.waitlistPos = data.waitlist_pos;
+                btn.textContent = 'Leave Waitlist';
+                btn.classList.remove('crow__enroll-btn--enrolled');
+                btn.classList.add('crow__enroll-btn--waitlisted');
+
+                if (spotsEl) {
+                    spotsEl.textContent = `Waitlisted (#${data.waitlist_pos})`;
+                    spotsEl.className = 'crow__spots crow__spots--waitlisted';
+                }
+                btn.disabled = false;
+
+            } else if (data.enrolled) {
+                // enrolled (directly or via waitlist auto-enroll)
+                btn.dataset.enrolled = '1';
+                btn.dataset.waitlisted = '0';
+                btn.textContent = 'Cancel';
+                btn.classList.add('crow__enroll-btn--enrolled');
+                btn.classList.remove('crow__enroll-btn--waitlisted');
+
+                if (spotsEl) {
+                    spotsEl.textContent = 'Enrolled';
+                    spotsEl.className = 'crow__spots';
+                }
+                btn.disabled = false;
+
+            } else {
+                // cancelled or left waitlist
+                btn.dataset.enrolled = '0';
+                btn.dataset.waitlisted = '0';
+                btn.classList.remove('crow__enroll-btn--enrolled', 'crow__enroll-btn--waitlisted');
+
+                if (spotsEl && data.capacity != null) {
+                    const free = data.capacity - data.count;
+                    if (free <= 0) {
+                        spotsEl.textContent = 'Full';
+                        spotsEl.className = 'crow__spots crow__spots--full';
+                        btn.textContent = 'Join Waitlist';
+                    } else {
+                        spotsEl.textContent = `${free} spot${free === 1 ? '' : 's'} left`;
+                        spotsEl.className = 'crow__spots';
+                        btn.textContent = 'Enroll';
+                    }
+                } else {
+                    btn.textContent = 'Enroll';
+                }
+                btn.disabled = false;
+            }
         })
         .catch(() => { btn.disabled = false; });
 });
