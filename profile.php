@@ -42,6 +42,32 @@ $username = $user['username'];
 $profile_photo = $user['profile_photo'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($action === 'select_plan') {
+        // count enrollments
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*)
+            FROM enrollments
+            WHERE member_id = ? AND status = 'enrolled'
+        ");
+        $stmt->execute([$user_id]);
+        $class_count = (int)$stmt->fetchColumn();
+
+        // plan limits
+        $limits = [
+            'Essential' => 2,
+            'All Access' => 8,
+            'Elite' => PHP_INT_MAX
+        ];
+
+        $plan = $_POST['plan'];
+
+        if ($class_count > $limits[$plan]) {
+            $errors[] = "Essential plan only allows 2 classes. Please reduce enrollments or upgrade.";
+        } else {
+            // allow subscription
+        }
+    }    
+    }
     if (!csrf_verify($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Invalid request. Please try again.';
     } elseif (!isset($_POST['progress_action']) && !isset($_POST['booking_action'])) {
@@ -169,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $profile_photo = $user['profile_photo'];
     }
 }
-}
+
 
 $attended_sessions = [];
 $enrolled_sessions = [];
@@ -339,7 +365,7 @@ if (($_SESSION['role'] ?? '') === 'member') {
                     $progress_errors[] = 'Deadline cannot be in the past.';
                 }
                 else {
-                    $pdo->prepare("INSERT INTO fitness_goals (member_id, title, unit, deadline, notes) VALUES (?,?,?,?,?,?)")
+                    $pdo->prepare("INSERT INTO fitness_goals (member_id, title, unit, deadline, notes) VALUES (?,?,?,?,?)")
                         ->execute([$user_id, $title, $unit ?: null, $deadline ?: null, $gnotes ?: null]);
                     $progress_success = 'Goal added.';
                 }
@@ -434,11 +460,29 @@ if (($_SESSION['role'] ?? '') === 'member') {
                 }
 
                 if (empty($booking_errors)) {
-                    $pdo->prepare("
-                        INSERT INTO personal_bookings
-                            (member_id, trainer_id, booking_date, start_time, end_time, notes)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                    ")->execute([$user_id, $trainer_id, $booking_date, $start_time, $end_time, $notes ?: null]);
+                    // Check if a cancelled booking exists for this slot
+                    $existing = $pdo->prepare("
+                        SELECT id FROM personal_bookings
+                        WHERE trainer_id = ? AND booking_date = ? AND start_time = ?
+                        AND status = 'cancelled'
+                    ");
+                    $existing->execute([$trainer_id, $booking_date, $start_time]);
+                    $old = $existing->fetch();
+
+                    if ($old) {
+                        // Reuse the old row, just update it
+                        $pdo->prepare("
+                            UPDATE personal_bookings
+                            SET member_id = ?, end_time = ?, notes = ?, status = 'booked', created_at = CURRENT_TIMESTAMP
+                            WHERE id = ?
+                        ")->execute([$user_id, $end_time, $notes ?: null, $old['id']]);
+                    } else {
+                        $pdo->prepare("
+                            INSERT INTO personal_bookings
+                                (member_id, trainer_id, booking_date, start_time, end_time, notes)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        ")->execute([$user_id, $trainer_id, $booking_date, $start_time, $end_time, $notes ?: null]);
+                    }
                     $booking_success = 'Session booked successfully.';
                 }
 
@@ -887,6 +931,7 @@ if (!empty($progress_success) || !empty($progress_errors)) {
             <?php endif; ?>
         </div>
 
+
         <!-- Membership Tab -->
         <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
         <div class="profile-tab-content" id="tab-content-membership" style="display: <?= $active_tab === 'membership' ? 'block' : 'none' ?>;">
@@ -1084,7 +1129,13 @@ if (!empty($progress_success) || !empty($progress_errors)) {
             </div>
                 <div class="form__group">
                     <label class="form__label">Unit <span class="form__optional">(optional)</span></label>
-                    <input type="text" name="goal_unit" class="form__input" placeholder="e.g. kg, km">
+                    <select name="goal_unit" class="form__input" required>
+                        <option value="">Select unit</option>
+                        <option value="kg">kg</option>
+                        <option value="km">km</option>
+                        <option value="meters">meters</option>
+                        <option value="reps">Repetitions</option>
+                    </select>
                 </div>
                 <div class="form__group">
                     <label class="form__label">Deadline <span class="form__optional">(optional)</span></label>
@@ -1101,6 +1152,7 @@ if (!empty($progress_success) || !empty($progress_errors)) {
             <li class="progress-goal-item progress-goal-item--<?= e($g['status']) ?>">
                 <div class="progress-goal-info">
                     <span class="progress-goal-title"><?= e($g['title']) ?></span>
+                     <span class="progress-goal-title"><?= e($g['unit']) ?></span>
                     <span class="progress-goal-meta">
                         <?php if ($g['deadline']): ?>By <?= e(date('d M Y', strtotime($g['deadline']))) ?> · <?php endif; ?>
                         <?php if ($g['notes']): ?><?= e($g['notes']) ?><?php endif; ?>

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ── Roster accordion toggle with lazy-load ─────────────────────
+    // Roster accordion toggle with lazy-load 
     var rosterCache = {};
 
     document.querySelectorAll('.trainer-roster-toggle').forEach(function (btn) {
