@@ -39,9 +39,10 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 <li><a href="/classes.php" class="primary-nav__link" <?= $current_page === 'classes' ? 'aria-current="page"' : '' ?>>Classes</a></li>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li><a href="/equipment.php" class="primary-nav__link" <?= $current_page === 'equipment' ? 'aria-current="page"' : '' ?>>Equipment</a></li>
-                <?php endif; ?>
-                <?php if (!isset($_SESSION['user_id'])): ?>
+                    <li class="mobile-only-nav"><a href="/profile.php" class="primary-nav__link" <?= $current_page === 'profile' ? 'aria-current="page"' : '' ?>>My Account</a></li>
+                <?php else: ?>
                     <li><a href="/login.php" class="primary-nav__link" <?= $current_page === 'login' ? 'aria-current="page"' : '' ?>>Login</a></li>
+                    <li class="mobile-only-nav"><a href="/register.php" class="primary-nav__link" <?= $current_page === 'register' ? 'aria-current="page"' : '' ?>>Join Now</a></li>
                 <?php endif; ?>
             </ul>
         </nav>

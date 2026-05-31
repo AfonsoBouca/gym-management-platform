@@ -18,4 +18,6 @@
 @import url("pages/profile.css") layer(pages);
 @import url("pages/classes.css") layer(pages);
 @import url("pages/trainer.css") layer(pages);
+@import url("pages/trainer-public.css") layer(pages);
 @import url("pages/equipment.css") layer(pages);
+@import url("pages/admin.css") layer(pages);
