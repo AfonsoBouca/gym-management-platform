@@ -7,13 +7,13 @@
 **All users:**
 - [X] Register a new account.
 - [X] Log in and out.
-- [ ] Edit their profile, including name, username, password, and profile photo.
+- [X] Edit their profile, including name, username, password, and profile photo.
 
 **Members:**
-- [ ] Browse the schedule of available fitness classes, filtering by type, trainer, day, or time.
+- [X] Browse the schedule of available fitness classes, filtering by type, trainer, day, or time.
 - [X] Enroll in and cancel enrollment from upcoming classes, subject to capacity limits.
 - [X] View trainer profiles, including their specializations and the classes they teach.
-- [ ] Check the current availability of equipment in the main training area.
+- [X] Check the current availability of equipment in the main training area.
 - [X] Leave ratings and reviews for classes they have attended.
 
 **Trainers:**
@@ -29,28 +29,33 @@
 - [X] Oversee and ensure the smooth operation of the entire system.
 
 **Extra:**
-- [ ] Personal training bookings.
-- [ ] Class waitlist.
-- [ ] Membership plans.
-- [ ] Member progress tracking.
+- [X] Personal training bookings.
+- [X] Class waitlist.
+- [X] Membership plans.
+- [X] Member progress tracking.
+- [X] REST API.
 
 ## Running
 Running is implemented, depending on your PHP location.
 
 If you have PHP added to your system PATH:
 
-[//]: # (not sure about the sqlite3 part, needs check)
-
-    sqlite3 database/gym.db < database/schema.sql
+    php database/seed.php
     php -S localhost:9000 
 
 Else:
 
-    sqlite3 database/database.db < database/database.sql
+    (php_location) database/seed.php
     (php_location) -S localhost:9000
 
 ## Credentials
 
+Trainer:
 - carlos@fitnessdown.pt/password123
+
+Admin:
+
 - admin@fitnessdown.pt/password123
+
+Member: 
 - joao@test.pt/password123

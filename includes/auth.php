@@ -3,6 +3,7 @@ declare(strict_types=1);
  
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helper.php';
+require_once __DIR__ . '/server_token.php';
  
 // constants for remember me cookie, duration
 define('REMEMBER_COOKIE', 'fd_remember');
@@ -10,9 +11,21 @@ define('REMEMBER_DAYS',   30);
  
 // session start (if not already) for authentication and CSRF token storage
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,      // cookie dies when browser closes
+        'path'     => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
- 
+if (isset($_SESSION['user_id'])) {
+    if (($_SESSION['server_token'] ?? '') !== SERVER_RUN_TOKEN) {
+        session_unset();
+        session_destroy();
+        session_start();
+    }
+}
 // csrf
 function csrf_token(): string {
     if (empty($_SESSION['csrf_token'])) {
@@ -77,6 +90,7 @@ function try_remember_login(): void {
         $_SESSION['role']      = $row['role'];
         $_SESSION['user_name'] = $row['name'];
         $_SESSION['username']  = $row['username'];
+        $_SESSION['login_time'] = time();
     } else {
         clear_remember_cookie();
     }
