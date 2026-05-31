@@ -49,12 +49,15 @@ include __DIR__ . '/includes/header.php';
 
     <section id="stats" class="stats" aria-label="The facility in numbers">
         <div class="ticker">
-            <p class="ticker__track">
-                <span>Open 24h Daily &nbsp;&nbsp;|&nbsp;&nbsp;
-                     1500m² of Premium Workspace &nbsp;&nbsp;
-                     |&nbsp;&nbsp; Mechanical Excellence &nbsp;&nbsp;|
-                     &nbsp;&nbsp; Est. 2026  </span>
-            </p>
+            <div class="ticker__track">
+                <span class="ticker__item">Open 24h Daily</span>
+                <span class="ticker__separator" aria-hidden="true">|</span>
+                <span class="ticker__item">1500m² of Premium Workspace</span>
+                <span class="ticker__separator" aria-hidden="true">|</span>
+                <span class="ticker__item">Mechanical Excellence</span>
+                <span class="ticker__separator" aria-hidden="true">|</span>
+                <span class="ticker__item">Est. 2026</span>
+            </div>
         </div>
     </section>
 
