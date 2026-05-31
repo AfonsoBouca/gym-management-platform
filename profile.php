@@ -42,33 +42,9 @@ $username = $user['username'];
 $profile_photo = $user['profile_photo'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($action === 'select_plan') {
-        // count enrollments
-        $stmt = $pdo->prepare("
-            SELECT COUNT(*)
-            FROM enrollments
-            WHERE member_id = ? AND status = 'enrolled'
-        ");
-        $stmt->execute([$user_id]);
-        $class_count = (int)$stmt->fetchColumn();
-
-        // plan limits
-        $limits = [
-            'Essential' => 2,
-            'All Access' => 8,
-            'Elite' => PHP_INT_MAX
-        ];
-
-        $plan = $_POST['plan'];
-
-        if ($class_count > $limits[$plan]) {
-            $errors[] = "Essential plan only allows 2 classes. Please reduce enrollments or upgrade.";
-        } else {
-            // allow subscription
-        }
-    }    
-    }
-    if (!csrf_verify($_POST['csrf_token'] ?? '')) {
+    if (empty($_POST) && isset($_SERVER['CONTENT_LENGTH']) && (int)$_SERVER['CONTENT_LENGTH'] > 0) {
+        $errors[] = 'The file you uploaded is too large. Please upload an image smaller than 2.5MB.';
+    } elseif (!csrf_verify($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Invalid request. Please try again.';
     } elseif (!isset($_POST['progress_action']) && !isset($_POST['booking_action'])) {
     $name = trim($_POST['name'] ?? '');
@@ -143,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-
+    }
     if (empty($errors)) {
         $fields = ['name' => $name, 'username' => $username, 'profile_photo' => $photo_path];
         $query = 'UPDATE users SET name = :name, username = :username, profile_photo = :profile_photo';
