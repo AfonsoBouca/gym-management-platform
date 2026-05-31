@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Please enter and confirm your password.';
     } elseif ($password !== $confirm) {
         $errors[] = 'Passwords do not match.';
-    } elseif (function_exists('mb_strlen') ? mb_strlen($password) : strlen($password) < 8) { 
+    } elseif ((function_exists('mb_strlen') ? mb_strlen($password) : strlen($password)) < 8) {
         $errors[] = 'Password must be at least 8 characters long.';
     }
 
