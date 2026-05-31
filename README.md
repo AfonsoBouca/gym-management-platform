@@ -52,7 +52,7 @@ Else:
 ## Credentials
 
 Trainer:
-- carlos@fitnessdown.pt/password123 
+- carlos@fitnessdown.pt/password123
 
 Admin:
 

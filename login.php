@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['role']      = $user['role'];
             $_SESSION['user_name'] = $user['name'];
             $_SESSION['username']  = $user['username'];
+            $_SESSION['server_token']  = SERVER_RUN_TOKEN;
 
             if (!empty($_POST['remember'])) {
                 set_remember_cookie($user['id']);
