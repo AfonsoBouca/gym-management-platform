@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var html = '<ul class="trainer-roster-members">';
         members.forEach(function (m) {
             var attendedClass = m.attended == 1
-                ? 'trainer-roster-member__status--yes'
-                : 'trainer-roster-member__status--no';
+                ? 'trainer-roster-member__status-btn--yes'
+                : 'trainer-roster-member__status-btn--no';
             var attendedLabel = m.attended == 1 ? 'Attended' : 'Pending';
 
             html += '<li class="trainer-roster-member">'
@@ -66,9 +66,9 @@ document.addEventListener('DOMContentLoaded', function () {
                   + '    <span class="trainer-roster-member__user">@' + escapeHtml(m.username) + '</span>'
                   + '  </div>'
                   + '  <div style="display:flex;align-items:center;gap:0.75rem;">'
-                  + '    <span class="trainer-roster-member__status ' + attendedClass + '">'
+                  + '    <button type="button" class="trainer-roster-member__status-btn ' + attendedClass + '" data-enrollment-id="' + m.enrollment_id + '" data-attended="' + m.attended + '">'
                   +        attendedLabel
-                  + '    </span>'
+                  + '    </button>'
                   + '    <span class="trainer-roster-member__date">' + escapeHtml(m.enrolled_at) + '</span>'
                   + '  </div>'
                   + '</li>';
@@ -237,5 +237,55 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch(function () { alert('Network error.'); btn.disabled = false; });
         });
+    });
+
+    // ── Toggle user attendance click listener ────────────────────────
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.trainer-roster-member__status-btn');
+        if (!btn || btn.disabled) return;
+
+        var enrollmentId = btn.dataset.enrollmentId;
+        var isAttended = btn.dataset.attended == '1';
+        var newAttended = isAttended ? 0 : 1;
+
+        btn.disabled = true;
+
+        var body = new FormData();
+        body.append('csrf_token', typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : '');
+        body.append('enrollment_id', enrollmentId);
+        body.append('attended', String(newAttended));
+
+        fetch('/api/trainer/attendance.php', { method: 'POST', body: body })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                btn.disabled = false;
+                if (!data.ok) {
+                    alert(data.msg);
+                    return;
+                }
+
+                var nowAttended = data.attended == 1;
+                btn.dataset.attended = nowAttended ? '1' : '0';
+                btn.textContent = nowAttended ? 'Attended' : 'Pending';
+
+                btn.classList.toggle('trainer-roster-member__status-btn--yes', nowAttended);
+                btn.classList.toggle('trainer-roster-member__status-btn--no', !nowAttended);
+
+                // Update rosterCache local state
+                var item = btn.closest('.trainer-roster-item');
+                var toggleBtn = item ? item.querySelector('.trainer-roster-toggle') : null;
+                var sessionId = toggleBtn ? toggleBtn.dataset.sessionId : null;
+                if (sessionId && rosterCache[sessionId]) {
+                    rosterCache[sessionId].forEach(function (m) {
+                        if (m.enrollment_id == enrollmentId) {
+                            m.attended = nowAttended ? 1 : 0;
+                        }
+                    });
+                }
+            })
+            .catch(function () {
+                alert('Network error.');
+                btn.disabled = false;
+            });
     });
 });

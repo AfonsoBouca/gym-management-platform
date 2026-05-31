@@ -17,10 +17,14 @@ const cards         = document.querySelectorAll('.crow');
 const switcherBtns  = document.querySelectorAll('.class-switcher__btn');
 const ttCells       = document.querySelectorAll('.timetable__cell');
 const bookBtns      = document.querySelectorAll('.crow__book-btn');
+const selectType    = document.getElementById('filter-type');
+const selectTrainer = document.getElementById('filter-trainer');
 
 /* ── state ──────────────────────────────────────────────────────── */
-let activeDay  = 'all';
-let activeTime = 'all';
+let activeDay     = 'all';
+let activeTime    = 'all';
+let activeType    = 'all';
+let activeTrainer = 'all';
 
 /* ================================================================
    1.  VIEW TOGGLE
@@ -57,11 +61,15 @@ function filterCards() {
     cards.forEach(card => {
         const cardDays = card.dataset.days.split(',');
         const cardTime = card.dataset.time;
+        const cardType = card.dataset.className;
+        const cardTrainer = card.dataset.trainerId;
 
-        const dayOk  = activeDay  === 'all' || cardDays.includes(activeDay);
-        const timeOk = activeTime === 'all' || cardTime === activeTime;
+        const dayOk     = activeDay  === 'all' || cardDays.includes(activeDay);
+        const timeOk    = activeTime === 'all' || cardTime === activeTime;
+        const typeOk    = activeType === 'all' || cardType === activeType;
+        const trainerOk = activeTrainer === 'all' || cardTrainer === activeTrainer;
 
-        card.style.display = (dayOk && timeOk) ? '' : 'none';
+        card.style.display = (dayOk && timeOk && typeOk && trainerOk) ? '' : 'none';
     });
 }
 
@@ -82,6 +90,20 @@ filterGroups.forEach(group => {
         });
     });
 });
+
+if (selectType) {
+    selectType.addEventListener('change', () => {
+        activeType = selectType.value;
+        filterCards();
+    });
+}
+
+if (selectTrainer) {
+    selectTrainer.addEventListener('change', () => {
+        activeTrainer = selectTrainer.value;
+        filterCards();
+    });
+}
 
 
 /* ================================================================

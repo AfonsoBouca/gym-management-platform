@@ -412,25 +412,46 @@
     white-space: nowrap;
 }
 
-.trainer-roster-member__status {
+.trainer-roster-member__status-btn {
     font-family: var(--font-mono);
     font-size: 0.68rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: 0.15rem 0.5rem;
     border-radius: 2rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: all 150ms ease;
+    outline: none;
 }
 
-.trainer-roster-member__status--yes {
+.trainer-roster-member__status-btn--yes {
     background: rgba(46, 160, 67, 0.12);
     border: 1px solid rgba(46, 160, 67, 0.3);
     color: #3fb950;
 }
 
-.trainer-roster-member__status--no {
+.trainer-roster-member__status-btn--yes:hover {
+    background: rgba(46, 160, 67, 0.25);
+    border-color: rgba(46, 160, 67, 0.5);
+}
+
+.trainer-roster-member__status-btn--no {
     background: rgba(139, 148, 158, 0.1);
     border: 1px solid rgba(139, 148, 158, 0.2);
     color: var(--text-muted);
+}
+
+.trainer-roster-member__status-btn--no:hover {
+    background: rgba(139, 148, 158, 0.2);
+    border-color: rgba(139, 148, 158, 0.4);
+    color: var(--text-soft);
+}
+
+.trainer-roster-member__status-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .trainer-roster-empty {

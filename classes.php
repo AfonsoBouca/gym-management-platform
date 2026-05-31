@@ -110,6 +110,16 @@ $tt_start   = 7;   // 07:00
 $tt_end     = 21;  // 21:00
 $tt_slots   = ($tt_end - $tt_start) * 4; // 15-min slots
 
+// unique class names (types) and trainers for filters
+$class_types = array_unique(array_column($classes, 'name'));
+sort($class_types);
+
+$trainers = [];
+foreach ($classes as $c) {
+    $trainers[$c['trainer_id']] = $c['trainer_name'];
+}
+asort($trainers);
+
 // ── selected class (timetable view) ────────────────────────────────
 $selected_class_id = isset($_GET['class']) ? (int)$_GET['class'] : null;
 $view = $selected_class_id ? 'timetable' : 'list';
@@ -198,6 +208,24 @@ require __DIR__ . '/includes/header.php';
                         <button class="filter-btn" data-value="night"     type="button">Night</button>
                     </div>
                 </div>
+                <div class="filters__group" data-filter="type">
+                    <span class="filters__label">Type</span>
+                    <select class="filter-select" id="filter-type">
+                        <option value="all">All</option>
+                        <?php foreach ($class_types as $type): ?>
+                            <option value="<?= e($type) ?>"><?= e($type) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="filters__group" data-filter="trainer">
+                    <span class="filters__label">Trainer</span>
+                    <select class="filter-select" id="filter-trainer">
+                        <option value="all">All</option>
+                        <?php foreach ($trainers as $tid => $tname): ?>
+                            <option value="<?= (int)$tid ?>"><?= e($tname) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
         </section>
 
@@ -220,6 +248,8 @@ require __DIR__ . '/includes/header.php';
                 ?>
                 <article class="crow"
                          data-class-id="<?= $cls['id'] ?>"
+                         data-class-name="<?= e($cls['name']) ?>"
+                         data-trainer-id="<?= (int)$cls['trainer_id'] ?>"
                          data-days="<?= e(implode(',', $cls_days)) ?>"
                          data-time="<?= e($time_period) ?>"
                          style="--card-accent: <?= e($color) ?>;">

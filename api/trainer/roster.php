@@ -48,7 +48,7 @@ if (!$stmt->fetch()) {
 }
 
 $stmt = $pdo->prepare("
-    SELECT u.name, u.username, e.enrolled_at, e.attended
+    SELECT e.id AS enrollment_id, u.name, u.username, e.enrolled_at, e.attended
     FROM enrollments e
     JOIN users u ON u.id = e.member_id
     WHERE e.session_id = :sid AND e.status = 'enrolled'
