@@ -241,7 +241,7 @@ require __DIR__ . '/includes/header.php';
                                    : implode(' · ', array_map(fn($d) => $day_abbr[$d] ?? $d, $cls_days));
                     $start_time    = $cls_sessions[0]['start_time'] ?? '00:00';
                     $start_hour    = (int) explode(':', $start_time)[0];
-                    $time_period   = $start_hour < 12 ? 'morning' : ($start_hour < 17 ? 'afternoon' : 'night');
+                    $time_period   = $start_hour < 12 ? 'morning' : ($start_hour <= 19 ? 'afternoon' : 'night');
                     $image         = !empty($cls['photo']) ? $cls['photo'] : ($class_images[$cls['name']] ?? null);
                     $color         = $class_colors[$cls['name']] ?? 'var(--accent)';
                     $rating        = $ratings[$cls['id']] ?? null;

@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const tabContentOverview = document.getElementById('tab-content-overview');
     const tabContentEdit = document.getElementById('tab-content-edit');
     const tabContentMembership = document.getElementById('tab-content-membership');
+    const tabBtnProgress = document.getElementById('tab-btn-progress');
+    const tabContentProgress = document.getElementById('tab-content-progress');
 
     function switchTab(activeTab) {
         if (activeTab === 'overview') {
@@ -21,6 +23,15 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabBtnOverview) tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnEdit) tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnMembership) tabBtnMembership.classList.add('profile-sidebar__nav-link--active');
+        } else if (activeTab === 'progress') {
+            if (tabContentOverview)   tabContentOverview.style.display   = 'none';
+            if (tabContentEdit)       tabContentEdit.style.display       = 'none';
+            if (tabContentMembership) tabContentMembership.style.display = 'none';
+            if (tabContentProgress)   tabContentProgress.style.display   = 'block';
+            if (tabBtnOverview)       tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnEdit)           tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
+           if (tabBtnMembership)     tabBtnMembership.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnProgress)       tabBtnProgress.classList.add('profile-sidebar__nav-link--active');
         } else {
             if (tabContentOverview) tabContentOverview.style.display = 'none';
             if (tabContentEdit) tabContentEdit.style.display = 'block';
@@ -28,17 +39,20 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabBtnOverview) tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnEdit) tabBtnEdit.classList.add('profile-sidebar__nav-link--active');
             if (tabBtnMembership) tabBtnMembership.classList.remove('profile-sidebar__nav-link--active');
+            if (tabContentProgress) tabContentProgress.style.display = 'none';
+            if (tabBtnProgress)     tabBtnProgress.classList.remove('profile-sidebar__nav-link--active');
         }
     }
 
     if (tabBtnOverview) tabBtnOverview.addEventListener('click', () => switchTab('overview'));
     if (tabBtnEdit) tabBtnEdit.addEventListener('click', () => switchTab('edit'));
     if (tabBtnMembership) tabBtnMembership.addEventListener('click', () => switchTab('membership'));
+    if (tabBtnProgress) tabBtnProgress.addEventListener('click', () => switchTab('progress'));
 
     // Check query params for active tab on load
     const urlParams = new URLSearchParams(window.location.search);
     const initialTab = urlParams.get('tab');
-    if (initialTab && ['overview', 'membership', 'edit'].includes(initialTab)) {
+    if (initialTab && ['overview', 'membership', 'progress', 'edit'].includes(initialTab)) {
         switchTab(initialTab);
     }
 

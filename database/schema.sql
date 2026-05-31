@@ -147,6 +147,17 @@ CREATE TABLE workout_logs (
     FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE
 );
 
+CREATE TABLE lift_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    workout_id INTEGER NOT NULL,
+    exercise TEXT NOT NULL,
+    sets INTEGER CHECK(sets > 0),
+    reps INTEGER CHECK(reps > 0),
+    weight_kg REAL CHECK(weight_kg >= 0),
+    notes TEXT,
+    FOREIGN KEY (workout_id) REFERENCES workout_logs(id) ON DELETE CASCADE
+);
+
 CREATE TABLE fitness_goals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     member_id INTEGER NOT NULL,

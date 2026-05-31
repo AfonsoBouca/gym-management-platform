@@ -7,13 +7,13 @@
 **All users:**
 - [X] Register a new account.
 - [X] Log in and out.
-- [ ] Edit their profile, including name, username, password, and profile photo.
+- [X] Edit their profile, including name, username, password, and profile photo.
 
 **Members:**
-- [ ] Browse the schedule of available fitness classes, filtering by type, trainer, day, or time.
+- [X] Browse the schedule of available fitness classes, filtering by type, trainer, day, or time.
 - [X] Enroll in and cancel enrollment from upcoming classes, subject to capacity limits.
 - [X] View trainer profiles, including their specializations and the classes they teach.
-- [ ] Check the current availability of equipment in the main training area.
+- [X] Check the current availability of equipment in the main training area.
 - [X] Leave ratings and reviews for classes they have attended.
 
 **Trainers:**
@@ -31,7 +31,7 @@
 **Extra:**
 - [ ] Personal training bookings.
 - [ ] Class waitlist.
-- [ ] Membership plans.
+- [X] Membership plans.
 - [ ] Member progress tracking.
 
 ## Running

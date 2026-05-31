@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Invalid request. Please try again.';
     }
-
+    if (!isset($_POST['progress_action'])) {
     $name = trim($_POST['name'] ?? '');
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -82,15 +82,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($_FILES['profile_photo']['error'] !== UPLOAD_ERR_OK) {
             $errors[] = 'There was a problem uploading your photo.';
         } else {
-            $file_info = new finfo(FILEINFO_MIME_TYPE);
-            $mime_type = $file_info->file($_FILES['profile_photo']['tmp_name']);
+            $allowed_ext = ['jpg', 'jpeg', 'png', 'webp'];
+            $original_name = $_FILES['profile_photo']['name'];
+            $extension = strtolower(pathinfo($original_name, PATHINFO_EXTENSION));
             $allowed = [
-                'image/jpeg' => 'jpg',
-                'image/png' => 'png',
-                'image/webp' => 'webp',
+                'jpg' => 'jpg',
+                'jpeg' => 'png',
+                'png' => 'png',
+                'webp' => 'webp',
             ];
-            if (!isset($allowed[$mime_type])) {
-                $errors[] = 'Upload a PNG, JPG, or WEBP image.';
+            if (!isset($allowed[$extension])) {
+                $errors[] = 'Upload a PNG, JPG, JPEG or WEBP image.';
             } elseif ($_FILES['profile_photo']['size'] > 2_500_000) {
                 $errors[] = 'Profile photo must be 2.5MB or smaller.';
             } else {
@@ -98,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true) && !is_dir($upload_dir)) {
                     $errors[] = 'Unable to create upload directory.';
                 } else {
-                    $extension = $allowed[$mime_type];
+                    $extension = $allowed[$extension];
                     $filename = sprintf('user-%d-%s.%s', $user_id, bin2hex(random_bytes(8)), $extension);
                     $destination = "$upload_dir/$filename";
                     if (!move_uploaded_file($_FILES['profile_photo']['tmp_name'], $destination)) {
@@ -167,6 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
         $profile_photo = $user['profile_photo'];
     }
+}
 }
 
 $attended_sessions = [];
@@ -269,6 +272,111 @@ if (($_SESSION['role'] ?? '') === 'member') {
     $stmt->execute([$user_id]);
     $enrolled_sessions = $stmt->fetchAll();
 }
+$workouts = [];
+$lifts_by_workout = [];
+$goals = [];
+$progress_errors = [];
+$progress_success = '';
+
+if (($_SESSION['role'] ?? '') === 'member') {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS lift_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        workout_id INTEGER NOT NULL,
+        exercise TEXT NOT NULL,
+        sets INTEGER CHECK(sets > 0),
+        reps INTEGER CHECK(reps > 0),
+        weight_kg REAL CHECK(weight_kg >= 0),
+        notes TEXT,
+        FOREIGN KEY (workout_id) REFERENCES workout_logs(id) ON DELETE CASCADE
+    )");
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['progress_action'])) {
+        if (!csrf_verify($_POST['csrf_token'] ?? '')) {
+            $progress_errors[] = 'Invalid security token.';
+        } else {
+            $progress_action = $_POST['progress_action'];
+            if ($progress_action === 'log_workout') {
+                $duration = (int)($_POST['duration_minutes'] ?? 0);
+                $calories = ($_POST['calories_burnt'] ?? '') !== '' ? (int)$_POST['calories_burnt'] : null;
+                $notes    = trim($_POST['workout_notes'] ?? '');
+                if ($duration <= 0) { $progress_errors[] = 'Duration must be greater than 0.'; }
+                else {
+                    $pdo->prepare("INSERT INTO workout_logs (member_id, duration_minutes, calories_burnt, notes) VALUES (?,?,?,?)")
+                        ->execute([$user_id, $duration, $calories, $notes ?: null]);
+                    $progress_success = 'Workout logged.';
+                }
+            } elseif ($progress_action === 'log_lift') {
+                $workout_id = (int)($_POST['workout_id'] ?? 0);
+                $exercise   = trim($_POST['exercise'] ?? '');
+                $sets       = (int)($_POST['sets'] ?? 0);
+                $reps       = (int)($_POST['reps'] ?? 0);
+                $weight     = ($_POST['weight_kg'] ?? '') !== '' ? (float)$_POST['weight_kg'] : null;
+                $notes      = trim($_POST['lift_notes'] ?? '');
+                $owns = $pdo->prepare("SELECT id FROM workout_logs WHERE id = ? AND member_id = ?");
+                $owns->execute([$workout_id, $user_id]);
+                if (!$owns->fetch())          { $progress_errors[] = 'Invalid workout.'; }
+                elseif ($exercise === '')      { $progress_errors[] = 'Exercise name is required.'; }
+                elseif ($sets <= 0 || $reps <= 0) { $progress_errors[] = 'Sets and reps must be greater than 0.'; }
+                else {
+                    $pdo->prepare("INSERT INTO lift_logs (workout_id, exercise, sets, reps, weight_kg, notes) VALUES (?,?,?,?,?,?)")
+                        ->execute([$workout_id, $exercise, $sets, $reps, $weight, $notes ?: null]);
+                    $progress_success = 'Lift logged.';
+                }
+            } elseif ($progress_action === 'delete_workout') {
+                $pdo->prepare("DELETE FROM workout_logs WHERE id = ? AND member_id = ?")
+                    ->execute([(int)$_POST['workout_id'], $user_id]);
+                $progress_success = 'Workout deleted.';
+            } elseif ($progress_action === 'delete_lift') {
+                $pdo->prepare("DELETE FROM lift_logs WHERE id = ? AND workout_id IN (SELECT id FROM workout_logs WHERE member_id = ?)")
+                    ->execute([(int)$_POST['lift_id'], $user_id]);
+                $progress_success = 'Lift removed.';
+            } elseif ($progress_action === 'add_goal') {
+                $title    = trim($_POST['goal_title'] ?? '');
+                $unit     = trim($_POST['goal_unit'] ?? '');
+                $deadline = trim($_POST['goal_deadline'] ?? '');
+                $gnotes   = trim($_POST['goal_notes'] ?? '');
+                if ($title === '') { $progress_errors[] = 'Goal title is required.'; }
+                else if ($deadline !== '' && $deadline < date('Y-m-d')) {
+                    $progress_errors[] = 'Deadline cannot be in the past.';
+                }
+                else {
+                    $pdo->prepare("INSERT INTO fitness_goals (member_id, title, target, unit, deadline, notes) VALUES (?,?,?,?,?,?)")
+                        ->execute([$user_id, $title, $target, $unit ?: null, $deadline ?: null, $gnotes ?: null]);
+                    $progress_success = 'Goal added.';
+                }
+            } elseif ($progress_action === 'update_goal') {
+                $status = $_POST['goal_status'] ?? '';
+                if (in_array($status, ['active','achieved','abandoned'])) {
+                    $pdo->prepare("UPDATE fitness_goals SET status = ? WHERE id = ? AND member_id = ?")
+                        ->execute([$status, (int)$_POST['goal_id'], $user_id]);
+                    $progress_success = 'Goal updated.';
+                }
+            } elseif ($progress_action === 'delete_goal') {
+                $pdo->prepare("DELETE FROM fitness_goals WHERE id = ? AND member_id = ?")
+                    ->execute([(int)$_POST['goal_id'], $user_id]);
+                $progress_success = 'Goal deleted.';
+            }
+        }
+    }
+
+    $w = $pdo->prepare("SELECT id, logged_at, duration_minutes, calories_burnt, notes FROM workout_logs WHERE member_id = ? ORDER BY logged_at DESC LIMIT 20");
+    $w->execute([$user_id]);
+    $workouts = $w->fetchAll();
+
+    if (!empty($workouts)) {
+        $wids = array_column($workouts, 'id');
+        $ph   = implode(',', array_fill(0, count($wids), '?'));
+        $rows = $pdo->prepare("SELECT id, workout_id, exercise, sets, reps, weight_kg, notes FROM lift_logs WHERE workout_id IN ($ph) ORDER BY id ASC");
+        $rows->execute($wids);
+        foreach ($rows->fetchAll() as $lift) {
+            $lifts_by_workout[(int)$lift['workout_id']][] = $lift;
+        }
+    }
+
+    $g = $pdo->prepare("SELECT id, title, target, unit, deadline, notes, status FROM fitness_goals WHERE member_id = ? ORDER BY CASE status WHEN 'active' THEN 0 WHEN 'achieved' THEN 1 ELSE 2 END, created_at DESC");
+    $g->execute([$user_id]);
+    $goals = $g->fetchAll();
+}
 
 $trainer_sessions = [];
 if (($_SESSION['role'] ?? '') === 'trainer') {
@@ -337,8 +445,11 @@ $active_tab = 'overview';
 if (isset($_GET['tab']) && in_array($_GET['tab'], ['overview', 'membership', 'edit'], true)) {
     $active_tab = $_GET['tab'];
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($errors) || !empty($success)) {
+if (($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['progress_action'])) || !empty($errors) || !empty($success)) {
     $active_tab = 'edit';
+}
+if (!empty($progress_success) || !empty($progress_errors)) {
+    $active_tab = 'progress';
 }
 ?>
 
@@ -380,6 +491,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($errors) || !empty($success)
                 <button type="button" class="profile-sidebar__nav-link <?= $active_tab === 'edit' ? 'profile-sidebar__nav-link--active' : '' ?>" id="tab-btn-edit">
                     ⚙ Edit Profile
                 </button>
+                <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+                    <button type="button" class="profile-sidebar__nav-link <?= $active_tab === 'progress' ? 'profile-sidebar__nav-link--active' : '' ?>" id="tab-btn-progress">
+                        💪 Progress
+                    </button>
+                <?php endif; ?>
                 <a href="/logout.php" class="profile-sidebar__logout-link">
                     🚪 Logout
                 </a>
@@ -752,6 +868,174 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($errors) || !empty($success)
             </section>
         </div>
         <?php endif; ?>
+<!-- Progress Tab -->
+<?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+<div class="profile-tab-content" id="tab-content-progress" style="display: <?= $active_tab === 'progress' ? 'block' : 'none' ?>;">
+
+    <?php if ($progress_success): ?>
+        <div class="alert-box alert-box--success"><?= e($progress_success) ?></div>
+    <?php endif; ?>
+    <?php if (!empty($progress_errors)): ?>
+        <div class="alert-box alert-box--error">
+            <ul><?php foreach ($progress_errors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul>
+        </div>
+    <?php endif; ?>
+
+    <!-- Workout Log -->
+    <section class="profile-card-wrapper">
+        <header class="profile-card-header">
+            <h2>Workout Log</h2>
+            <p>Record your sessions and the lifts you performed.</p>
+        </header>
+        <form class="progress-log-form" method="post" action="/profile.php" novalidate>
+            <input type="hidden" name="csrf_token"      value="<?= e(csrf_token()) ?>">
+            <input type="hidden" name="progress_action" value="log_workout">
+            <div class="progress-log-form__row">
+                <div class="form__group">
+                    <label class="form__label">Duration (min)</label>
+                    <input type="number" name="duration_minutes" class="form__input" min="1" placeholder="e.g. 60" required>
+                </div>
+                <div class="form__group">
+                    <label class="form__label">Calories burned <span class="form__optional">(optional)</span></label>
+                    <input type="number" name="calories_burnt" class="form__input" min="0" placeholder="e.g. 400">
+                </div>
+                <div class="form__group">
+                    <label class="form__label">Notes <span class="form__optional">(optional)</span></label>
+                    <input type="text" name="workout_notes" class="form__input" placeholder="e.g. Leg day">
+                </div>
+            </div>
+            <button type="submit" class="button button--primary">Log Workout</button>
+        </form>
+
+        <?php if (empty($workouts)): ?>
+            <p class="progress-empty">No workouts logged yet.</p>
+        <?php else: ?>
+        <ul class="progress-workout-list">
+            <?php foreach ($workouts as $w):
+                $lifts = $lifts_by_workout[(int)$w['id']] ?? [];
+            ?>
+            <li class="progress-workout-item">
+                <div class="progress-workout-header">
+                    <div class="progress-workout-meta">
+                        <span class="progress-workout-date"><?= e(date('d M Y · H:i', strtotime($w['logged_at']))) ?></span>
+                        <span class="progress-workout-stats">
+                            <?= $w['duration_minutes'] ?> min
+                            <?php if ($w['calories_burnt'] !== null): ?> · <?= $w['calories_burnt'] ?> kcal<?php endif; ?>
+                            <?php if ($w['notes']): ?> · <?= e($w['notes']) ?><?php endif; ?>
+                        </span>
+                    </div>
+                    <form method="post" action="/profile.php" style="display:inline">
+                        <input type="hidden" name="csrf_token"      value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="progress_action" value="delete_workout">
+                        <input type="hidden" name="workout_id"      value="<?= $w['id'] ?>">
+                        <button type="submit" class="progress-delete-btn" onclick="return confirm('Delete this workout and all its lifts?')">✕</button>
+                    </form>
+                </div>
+                <?php if (!empty($lifts)): ?>
+                <table class="progress-lift-table">
+                    <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th><th>Notes</th><th></th></tr></thead>
+                    <tbody>
+                        <?php foreach ($lifts as $lift): ?>
+                        <tr>
+                            <td><?= e($lift['exercise']) ?></td>
+                            <td class="progress-lift-num"><?= $lift['sets'] ?></td>
+                            <td class="progress-lift-num"><?= $lift['reps'] ?></td>
+                            <td class="progress-lift-num"><?= $lift['weight_kg'] !== null ? $lift['weight_kg'] . ' kg' : '—' ?></td>
+                            <td class="progress-lift-notes"><?= e($lift['notes'] ?? '—') ?></td>
+                            <td>
+                                <form method="post" action="/profile.php" style="display:inline">
+                                    <input type="hidden" name="csrf_token"      value="<?= e(csrf_token()) ?>">
+                                    <input type="hidden" name="progress_action" value="delete_lift">
+                                    <input type="hidden" name="lift_id"         value="<?= $lift['id'] ?>">
+                                    <button type="submit" class="progress-delete-btn" onclick="return confirm('Remove this lift?')">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php endif; ?>
+                <form class="progress-add-lift" method="post" action="/profile.php">
+                    <input type="hidden" name="csrf_token"      value="<?= e(csrf_token()) ?>">
+                    <input type="hidden" name="progress_action" value="log_lift">
+                    <input type="hidden" name="workout_id"      value="<?= $w['id'] ?>">
+                    <input type="text"   name="exercise"   class="form__input progress-add-lift__field" placeholder="Exercise" required>
+                    <input type="number" name="sets"       class="form__input progress-add-lift__field" placeholder="Sets" min="1" style="width:5rem">
+                    <input type="number" name="reps"       class="form__input progress-add-lift__field" placeholder="Reps" min="1" style="width:5rem">
+                    <input type="number" name="weight_kg"  class="form__input progress-add-lift__field" placeholder="kg"   min="0" step="0.5" style="width:5rem">
+                    <input type="text"   name="lift_notes" class="form__input progress-add-lift__field" placeholder="Notes (optional)">
+                    <button type="submit" class="button button--primary progress-add-lift__btn">+ Lift</button>
+                </form>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+        <?php endif; ?>
+    </section>
+
+    <!-- Fitness Goals -->
+    <section class="profile-card-wrapper" style="margin-top: 2rem;">
+        <header class="profile-card-header">
+            <h2>Fitness Goals</h2>
+            <p>Set targets and track what you're working towards.</p>
+        </header>
+        <form class="progress-log-form" method="post" action="/profile.php" novalidate>
+            <input type="hidden" name="csrf_token"      value="<?= e(csrf_token()) ?>">
+            <input type="hidden" name="progress_action" value="add_goal">
+            <div class="form__group">
+                <label class="form__label">Goal</label>
+                <input type="text" name="goal_title" class="form__input" placeholder="e.g. Bench press 100 kg" required>
+            </div>
+                <div class="form__group">
+                    <label class="form__label">Unit <span class="form__optional">(optional)</span></label>
+                    <input type="text" name="goal_unit" class="form__input" placeholder="e.g. kg, km">
+                </div>
+                <div class="form__group">
+                    <label class="form__label">Deadline <span class="form__optional">(optional)</span></label>
+                    <input type="date" name="goal_deadline" class="form__input" min="<?= date('Y-m-d') ?>">
+                </div>
+            </div>
+            <button type="submit" class="button button--primary">Add Goal</button>
+        </form>
+
+        <?php if (empty($goals)): ?>
+            <p class="progress-empty">No goals set yet.</p>
+        <?php else: ?>
+        <ul class="progress-goal-list">
+            <?php foreach ($goals as $g): ?>
+            <li class="progress-goal-item progress-goal-item--<?= e($g['status']) ?>">
+                <div class="progress-goal-info">
+                    <span class="progress-goal-title"><?= e($g['title']) ?></span>
+                    <span class="progress-goal-meta">
+                        <?php if ($g['deadline']): ?>By <?= e(date('d M Y', strtotime($g['deadline']))) ?> · <?php endif; ?>
+                        <?php if ($g['notes']): ?><?= e($g['notes']) ?><?php endif; ?>
+                    </span>
+                </div>
+                <div class="progress-goal-actions">
+                    <span class="progress-goal-badge progress-goal-badge--<?= e($g['status']) ?>"><?= e(ucfirst($g['status'])) ?></span>
+                    <form method="post" action="/profile.php" style="display:inline">
+                        <input type="hidden" name="csrf_token"      value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="progress_action" value="update_goal">
+                        <input type="hidden" name="goal_id"         value="<?= $g['id'] ?>">
+                        <select name="goal_status" class="progress-goal-select" onchange="this.form.submit()">
+                            <option value="active"    <?= $g['status'] === 'active'    ? 'selected' : '' ?>>Active</option>
+                            <option value="achieved"  <?= $g['status'] === 'achieved'  ? 'selected' : '' ?>>Achieved</option>
+                            <option value="abandoned" <?= $g['status'] === 'abandoned' ? 'selected' : '' ?>>Abandoned</option>
+                        </select>
+                    </form>
+                    <form method="post" action="/profile.php" style="display:inline">
+                        <input type="hidden" name="csrf_token"      value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="progress_action" value="delete_goal">
+                        <input type="hidden" name="goal_id"         value="<?= $g['id'] ?>">
+                        <button type="submit" class="progress-delete-btn" onclick="return confirm('Delete this goal?')">✕</button>
+                    </form>
+                </div>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+        <?php endif; ?>
+    </section>
+</div>
+<?php endif; ?>
 
         <!-- Edit Profile Tab -->
         <div class="profile-tab-content" id="tab-content-edit" style="display: <?= $active_tab === 'edit' ? 'block' : 'none' ?>;">
