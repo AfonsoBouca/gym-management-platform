@@ -76,6 +76,10 @@ if (!in_array('notes', $col_names, true)) {
 if ($action === 'complete') {
     $stmt = $pdo->prepare("UPDATE sessions SET status = 'completed' WHERE id = ?");
     $stmt->execute([$session_id]);
+
+    $stmt = $pdo->prepare("UPDATE enrollments SET attended = 1 WHERE session_id = ? AND status = 'enrolled'");
+    $stmt->execute([$session_id]);
+
     json_out(true, 'Session marked as completed.', ['status' => 'completed']);
 
 } elseif ($action === 'cancel') {
