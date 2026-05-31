@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
 header('Cache-Control: public, max-age=60');
 
 require_once __DIR__ . '/../includes/db.php';
