@@ -129,6 +129,7 @@ CREATE TABLE personal_bookings(
     start_time TEXT NOT NULL,
     end_time TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'booked' CHECK (status IN ('booked', 'cancelled', 'completed')),
+    notes TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE RESTRICT,
     FOREIGN KEY (trainer_id) REFERENCES users(id) ON DELETE RESTRICT,

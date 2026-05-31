@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const tabContentMembership = document.getElementById('tab-content-membership');
     const tabBtnProgress = document.getElementById('tab-btn-progress');
     const tabContentProgress = document.getElementById('tab-content-progress');
+    const tabBtnBookings = document.getElementById('tab-btn-bookings');
+    const tabContentBookings = document.getElementById('tab-content-bookings');
 
     function switchTab(activeTab) {
         if (activeTab === 'overview') {
@@ -16,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabBtnOverview) tabBtnOverview.classList.add('profile-sidebar__nav-link--active');
             if (tabBtnEdit) tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnMembership) tabBtnMembership.classList.remove('profile-sidebar__nav-link--active');
+            if (tabContentBookings) tabContentBookings.style.display = 'none';
+            if (tabBtnBookings)     tabBtnBookings.classList.remove('profile-sidebar__nav-link--active');
         } else if (activeTab === 'membership') {
             if (tabContentOverview) tabContentOverview.style.display = 'none';
             if (tabContentEdit) tabContentEdit.style.display = 'none';
@@ -23,6 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabBtnOverview) tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnEdit) tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnMembership) tabBtnMembership.classList.add('profile-sidebar__nav-link--active');
+            if (tabContentBookings) tabContentBookings.style.display = 'none';
+            if (tabBtnBookings)     tabBtnBookings.classList.remove('profile-sidebar__nav-link--active');
         } else if (activeTab === 'progress') {
             if (tabContentOverview)   tabContentOverview.style.display   = 'none';
             if (tabContentEdit)       tabContentEdit.style.display       = 'none';
@@ -30,8 +36,21 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabContentProgress)   tabContentProgress.style.display   = 'block';
             if (tabBtnOverview)       tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnEdit)           tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
-           if (tabBtnMembership)     tabBtnMembership.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnMembership)     tabBtnMembership.classList.remove('profile-sidebar__nav-link--active');
             if (tabBtnProgress)       tabBtnProgress.classList.add('profile-sidebar__nav-link--active');
+            if (tabContentBookings) tabContentBookings.style.display = 'none';
+            if (tabBtnBookings)     tabBtnBookings.classList.remove('profile-sidebar__nav-link--active');
+            } else if (activeTab === 'bookings') {
+            if (tabContentOverview)   tabContentOverview.style.display   = 'none';
+            if (tabContentEdit)       tabContentEdit.style.display       = 'none';
+            if (tabContentMembership) tabContentMembership.style.display = 'none';
+            if (tabContentProgress)   tabContentProgress.style.display   = 'none';
+            if (tabContentBookings)   tabContentBookings.style.display   = 'block';
+            if (tabBtnOverview)       tabBtnOverview.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnEdit)           tabBtnEdit.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnMembership)     tabBtnMembership.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnProgress)       tabBtnProgress.classList.remove('profile-sidebar__nav-link--active');
+            if (tabBtnBookings)       tabBtnBookings.classList.add('profile-sidebar__nav-link--active');
         } else {
             if (tabContentOverview) tabContentOverview.style.display = 'none';
             if (tabContentEdit) tabContentEdit.style.display = 'block';
@@ -48,11 +67,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (tabBtnEdit) tabBtnEdit.addEventListener('click', () => switchTab('edit'));
     if (tabBtnMembership) tabBtnMembership.addEventListener('click', () => switchTab('membership'));
     if (tabBtnProgress) tabBtnProgress.addEventListener('click', () => switchTab('progress'));
+    if (tabBtnBookings) tabBtnBookings.addEventListener('click', () => switchTab('bookings'));
+
 
     // Check query params for active tab on load
     const urlParams = new URLSearchParams(window.location.search);
     const initialTab = urlParams.get('tab');
-    if (initialTab && ['overview', 'membership', 'progress', 'edit'].includes(initialTab)) {
+    if (initialTab && ['overview', 'membership', 'progress', 'bookings', 'edit'].includes(initialTab)) {
         switchTab(initialTab);
     }
 
@@ -299,4 +320,125 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         });
     }
+    // Booking slot picker 
+const trainerSelect  = document.getElementById('trainer-select');
+const weekStrip      = document.getElementById('week-strip');
+const bookingDays    = document.getElementById('booking-days');
+const slotSection    = document.getElementById('slot-section');
+const slotGrid       = document.getElementById('slot-grid');
+const slotDateLabel  = document.getElementById('slot-date-label');
+const bookingSummary = document.getElementById('booking-summary');
+const summaryText    = document.getElementById('summary-text');
+const bookingSubmit  = document.getElementById('booking-submit');
+const hiddenTrainer  = document.getElementById('booking-trainer-id');
+const hiddenDate     = document.getElementById('booking-date-val');
+const hiddenTime     = document.getElementById('booking-time-val');
+
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAY_FULL  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function resetFrom(level) {
+    // level: 'trainer' | 'day' | 'slot'
+    if (level === 'trainer') {
+        weekStrip.style.display  = 'none';
+        bookingDays.innerHTML    = '';
+        hiddenTrainer.value      = '';
+    }
+    if (level === 'trainer' || level === 'day') {
+        slotSection.style.display = 'none';
+        slotGrid.innerHTML        = '';
+        hiddenDate.value          = '';
+    }
+    if (level === 'trainer' || level === 'day' || level === 'slot') {
+        bookingSummary.style.display = 'none';
+        bookingSubmit.style.display  = 'none';
+        hiddenTime.value             = '';
+    }
+}
+
+function buildWeekStrip(trainerId) {
+    resetFrom('trainer');
+    hiddenTrainer.value = trainerId;
+    bookingDays.innerHTML = '';
+
+    // Build the next 14 days (skip today if past noon, always show today)
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const iso  = d.toISOString().slice(0, 10);
+        const btn  = document.createElement('button');
+        btn.type        = 'button';
+        btn.className   = 'booking-day-btn';
+        btn.dataset.date = iso;
+        btn.innerHTML   = `<strong>${DAY_NAMES[d.getDay()]}</strong><br>${d.getDate()}/${d.getMonth()+1}`;
+        btn.addEventListener('click', () => loadSlots(trainerId, iso, btn));
+        bookingDays.appendChild(btn);
+    }
+    weekStrip.style.display = 'block';
+}
+
+function loadSlots(trainerId, date, activeDayBtn) {
+    resetFrom('day');
+    // highlight active day
+    document.querySelectorAll('.booking-day-btn').forEach(b => b.classList.remove('is-active'));
+    activeDayBtn.classList.add('is-active');
+
+    slotGrid.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">Loading…</p>';
+    slotSection.style.display = 'block';
+
+    const d = new Date(date + 'T00:00:00');
+    slotDateLabel.textContent = `${DAY_FULL[d.getDay()]}, ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+
+    fetch(`/api/trainer_slots.php?trainer_id=${trainerId}&date=${date}`)
+        .then(r => r.json())
+        .then(data => {
+            slotGrid.innerHTML = '';
+            if (!data.ok) {
+                slotGrid.innerHTML = `<p style="color:var(--danger)">${data.msg}</p>`;
+                return;
+            }
+            data.slots.forEach(slot => {
+                const btn = document.createElement('button');
+                btn.type      = 'button';
+                btn.textContent = slot.time;
+                btn.className = 'booking-slot' + (slot.available ? '' : ' is-booked');
+                if (!slot.available) {
+                    btn.disabled = true;
+                } else {
+                    btn.addEventListener('click', () => selectSlot(date, slot.time, btn));
+                }
+                slotGrid.appendChild(btn);
+            });
+        })
+        .catch(() => {
+            slotGrid.innerHTML = '<p style="color:var(--danger)">Failed to load slots.</p>';
+        });
+}
+
+function selectSlot(date, time, activeSlotBtn) {
+    document.querySelectorAll('.booking-slot').forEach(b => b.classList.remove('is-active'));
+    activeSlotBtn.classList.add('is-active');
+
+    hiddenDate.value = date;
+    hiddenTime.value = time;
+
+    const trainerName = trainerSelect.options[trainerSelect.selectedIndex].text;
+    const d = new Date(date + 'T00:00:00');
+    summaryText.textContent =
+        `${trainerName} · ${DAY_FULL[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} at ${time}`;
+
+    bookingSummary.style.display = 'block';
+    bookingSubmit.style.display  = 'block';
+}
+
+if (trainerSelect) {
+    trainerSelect.addEventListener('change', function () {
+        if (this.value) {
+            buildWeekStrip(this.value);
+        } else {
+            resetFrom('trainer');
+        }
+    });
+}
 });

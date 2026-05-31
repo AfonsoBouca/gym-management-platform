@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verify($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Invalid request. Please try again.';
     }
-    if (!isset($_POST['progress_action'])) {
+    if (!isset($_POST['progress_action']) && !isset($_POST['booking_action'])) {
     $name = trim($_POST['name'] ?? '');
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -340,8 +340,8 @@ if (($_SESSION['role'] ?? '') === 'member') {
                     $progress_errors[] = 'Deadline cannot be in the past.';
                 }
                 else {
-                    $pdo->prepare("INSERT INTO fitness_goals (member_id, title, target, unit, deadline, notes) VALUES (?,?,?,?,?,?)")
-                        ->execute([$user_id, $title, $target, $unit ?: null, $deadline ?: null, $gnotes ?: null]);
+                    $pdo->prepare("INSERT INTO fitness_goals (member_id, title, unit, deadline, notes) VALUES (?,?,?,?,?,?)")
+                        ->execute([$user_id, $title, $unit ?: null, $deadline ?: null, $gnotes ?: null]);
                     $progress_success = 'Goal added.';
                 }
             } elseif ($progress_action === 'update_goal') {
@@ -358,6 +358,9 @@ if (($_SESSION['role'] ?? '') === 'member') {
             }
         }
     }
+    if (!empty($progress_success) || !empty($progress_errors)) {
+        $active_tab = 'progress';
+    }
 
     $w = $pdo->prepare("SELECT id, logged_at, duration_minutes, calories_burnt, notes FROM workout_logs WHERE member_id = ? ORDER BY logged_at DESC LIMIT 20");
     $w->execute([$user_id]);
@@ -373,9 +376,99 @@ if (($_SESSION['role'] ?? '') === 'member') {
         }
     }
 
-    $g = $pdo->prepare("SELECT id, title, target, unit, deadline, notes, status FROM fitness_goals WHERE member_id = ? ORDER BY CASE status WHEN 'active' THEN 0 WHEN 'achieved' THEN 1 ELSE 2 END, created_at DESC");
+    $g = $pdo->prepare("SELECT id, title, unit, deadline, notes, status FROM fitness_goals WHERE member_id = ? ORDER BY CASE status WHEN 'active' THEN 0 WHEN 'achieved' THEN 1 ELSE 2 END, created_at DESC");
     $g->execute([$user_id]);
     $goals = $g->fetchAll();
+}
+
+$bookings = [];
+$booking_errors = [];
+$booking_success = '';
+$available_trainers = [];
+
+if (($_SESSION['role'] ?? '') === 'member') {
+    // fetch all active trainers for the booking form
+    $t = $pdo->query("SELECT id, name FROM users WHERE role = 'trainer' AND is_active = 1 ORDER BY name");
+    $available_trainers = $t->fetchAll();
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['booking_action'])) {
+        if (!csrf_verify($_POST['csrf_token'] ?? '')) {
+            $booking_errors[] = 'Invalid security token.';
+        } else {
+            $booking_action = $_POST['booking_action'];
+
+            if ($booking_action === 'book') {
+                $trainer_id   = (int)($_POST['trainer_id']    ?? 0);
+                $booking_date = trim($_POST['booking_date']   ?? '');
+                $start_time   = trim($_POST['start_time']     ?? '');
+                $notes        = trim($_POST['booking_notes']  ?? '');
+
+                // Calculate end_time as 1 hour after start_time
+                $end_time = null;
+                if ($start_time && preg_match('/^\d{2}:\d{2}$/', $start_time)) {
+                    list($h, $m) = explode(':', $start_time);
+                    $end_time = str_pad((string)($h + 1), 2, '0', STR_PAD_LEFT) . ':' . $m;
+                }
+
+                if ($trainer_id === 0)                              $booking_errors[] = 'Please select a trainer.';
+                if ($booking_date === '' || $booking_date < date('Y-m-d')) $booking_errors[] = 'Please select a valid future date.';
+                if (!preg_match('/^\d{2}:\d{2}$/', $start_time))   $booking_errors[] = 'Invalid start time.';
+                if (!$end_time)                                     $booking_errors[] = 'Invalid start time.';
+
+
+                // verify trainer exists
+                if (empty($booking_errors)) {
+                    $tc = $pdo->prepare("SELECT id FROM users WHERE id = ? AND role = 'trainer' AND is_active = 1");
+                    $tc->execute([$trainer_id]);
+                    if (!$tc->fetch()) $booking_errors[] = 'Invalid trainer selected.';
+                }
+
+                // check slot not already taken
+                if (empty($booking_errors)) {
+                    $conflict = $pdo->prepare("
+                        SELECT id FROM personal_bookings
+                        WHERE trainer_id = ? AND booking_date = ? AND start_time = ?
+                        AND status = 'booked'
+                    ");
+                    $conflict->execute([$trainer_id, $booking_date, $start_time]);
+                    if ($conflict->fetch()) $booking_errors[] = 'That time slot is already booked. Please choose another.';
+                }
+
+                if (empty($booking_errors)) {
+                    $pdo->prepare("
+                        INSERT INTO personal_bookings
+                            (member_id, trainer_id, booking_date, start_time, end_time, notes)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    ")->execute([$user_id, $trainer_id, $booking_date, $start_time, $end_time, $notes ?: null]);
+                    $booking_success = 'Session booked successfully.';
+                }
+
+            } elseif ($booking_action === 'cancel') {
+                $booking_id = (int)($_POST['booking_id'] ?? 0);
+                $pdo->prepare("
+                    UPDATE personal_bookings SET status = 'cancelled'
+                    WHERE id = ? AND member_id = ? AND status = 'booked'
+                ")->execute([$booking_id, $user_id]);
+                $booking_success = 'Booking cancelled.';
+            }
+        }
+    }
+    if (!empty($booking_success) || !empty($booking_errors)) {
+        $active_tab = 'bookings';
+    }
+
+    // fetch this member's bookings
+    $b = $pdo->prepare("
+        SELECT pb.id, pb.booking_date, pb.start_time, pb.end_time, pb.status, pb.notes,
+               u.name AS trainer_name
+        FROM personal_bookings pb
+        JOIN users u ON u.id = pb.trainer_id
+        WHERE pb.member_id = ?
+        ORDER BY pb.booking_date DESC, pb.start_time DESC
+        LIMIT 20
+    ");
+    $b->execute([$user_id]);
+    $bookings = $b->fetchAll();
 }
 
 $trainer_sessions = [];
@@ -442,7 +535,7 @@ $extra_js = '/js/profile.js';
 include __DIR__ . '/includes/header.php';
 
 $active_tab = 'overview';
-if (isset($_GET['tab']) && in_array($_GET['tab'], ['overview', 'membership', 'edit'], true)) {
+if (isset($_GET['tab']) && in_array($_GET['tab'], ['overview', 'membership', 'edit','progress','bookings'], true)) {
     $active_tab = $_GET['tab'];
 }
 if (($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['progress_action'])) || !empty($errors) || !empty($success)) {
@@ -495,6 +588,11 @@ if (!empty($progress_success) || !empty($progress_errors)) {
                     <button type="button" class="profile-sidebar__nav-link <?= $active_tab === 'progress' ? 'profile-sidebar__nav-link--active' : '' ?>" id="tab-btn-progress">
                         💪 Progress
                     </button>
+                <?php endif; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+                    <button type="button" class="profile-sidebar__nav-link <?= $active_tab === 'bookings' ? 'profile-sidebar__nav-link--active' : '' ?>" id="tab-btn-bookings">
+                        📅 Bookings
+                        </button>
                 <?php endif; ?>
                 <a href="/logout.php" class="profile-sidebar__logout-link">
                     🚪 Logout
@@ -993,7 +1091,6 @@ if (!empty($progress_success) || !empty($progress_errors)) {
                     <label class="form__label">Deadline <span class="form__optional">(optional)</span></label>
                     <input type="date" name="goal_deadline" class="form__input" min="<?= date('Y-m-d') ?>">
                 </div>
-            </div>
             <button type="submit" class="button button--primary">Add Goal</button>
         </form>
 
@@ -1113,8 +1210,110 @@ if (!empty($progress_success) || !empty($progress_errors)) {
                 </form>
             </section>
         </div>
-    </div>
 
+        <div class="profile-tab-content" id="tab-content-bookings" style="display: <?= $active_tab === 'bookings' ? 'block' : 'none' ?>;">
+            <?php if (($_SESSION['role'] ?? '') === 'member'): ?>
+            <section class="profile-card-wrapper">
+                <header class="profile-card-header">
+                    <h2>Book a Personal Trainer</h2>
+                    <p>Schedule one-on-one training sessions.</p>
+                </header>
+
+                <?php if ($booking_success): ?>
+                    <div class="alert alert--success"><?= e($booking_success) ?></div>
+                <?php endif; ?>
+                <?php if (!empty($booking_errors)): ?>
+                    <div class="alert alert--error">
+                        <?php foreach ($booking_errors as $err): ?>
+                            <div><?= e($err) ?></div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+        <form method="POST" action="/profile.php?tab=bookings" class="booking-form" id="booking-form">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+            <input type="hidden" name="booking_action" value="book">
+            <input type="hidden" name="trainer_id"   id="booking-trainer-id" value="">
+            <input type="hidden" name="booking_date" id="booking-date-val"   value="">
+            <input type="hidden" name="start_time"   id="booking-time-val"   value="">
+
+            <div class="form__group">
+                <label class="form__label">Trainer</label>
+                <select id="trainer-select" class="form__input" required>
+                    <option value="">Select a trainer</option>
+                    <?php foreach ($available_trainers as $trainer): ?>
+                        <option value="<?= (int)$trainer['id'] ?>"><?= e($trainer['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div id="week-strip" style="display:none; margin-top:1.5rem;">
+                <label class="form__label">Select a day</label>
+                <div class="booking-week-strip" id="booking-days"></div>
+            </div>
+
+            <div id="slot-section" style="display:none; margin-top:1.5rem;">
+                <label class="form__label">Available times for <span id="slot-date-label"></span></label>
+                <div class="booking-slot-grid" id="slot-grid"></div>
+            </div>
+
+            <div id="booking-summary" style="display:none; margin-top:1.5rem;">
+                <div class="booking-summary-box">
+                    <span id="summary-text"></span>
+                </div>
+            </div>
+
+            <div class="form__group" style="margin-top:1.25rem;">
+                <label class="form__label">Notes <span class="form__optional">(optional)</span></label>
+                <textarea name="booking_notes" class="form__input" rows="2"
+                        placeholder="Any special requests..."></textarea>
+            </div>
+
+            <button type="submit" class="button button--primary" id="booking-submit"
+                    style="margin-top:1rem; display:none;">Confirm Booking</button>
+        </form>
+
+                <hr style="margin: 2rem 0;">
+
+                <h3 style="margin-bottom: 1rem;">Your Bookings</h3>
+                <?php if (empty($bookings)): ?>
+                    <p>No bookings yet.</p>
+                <?php else: ?>
+                    <ul style="list-style: none; padding: 0;">
+                        <?php foreach ($bookings as $booking): ?>
+                            <li style="padding: 1rem; border-bottom: 1px solid var(--border);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong><?= e($booking['trainer_name']) ?></strong>
+                                        <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                                            <?= e(date('M d, Y', strtotime($booking['booking_date']))) ?> · <?= e($booking['start_time']) ?> - <?= e($booking['end_time']) ?>
+                                            <?php if (!empty($booking['notes'])): ?>
+                                                <div style="margin-top: 0.25rem;">Notes: <?= e($booking['notes']) ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.85rem; background: var(--bg-secondary);">
+                                            <?= ucfirst(e($booking['status'])) ?>
+                                        </span>
+                                        <?php if ($booking['status'] === 'booked'): ?>
+                                            <form method="POST" action="/profile.php" style="display: inline; margin-left: 1rem;">
+                                                <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                                                <input type="hidden" name="booking_action" value="cancel">
+                                                <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                                <button type="submit" class="button button--danger" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Cancel</button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </section>
+            <?php endif; ?>
+        </div>
+    </div>
 </main>
 
 <?php include __DIR__ . '/includes/footer.php';

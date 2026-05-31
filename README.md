@@ -29,10 +29,10 @@
 - [X] Oversee and ensure the smooth operation of the entire system.
 
 **Extra:**
-- [ ] Personal training bookings.
+- [X] Personal training bookings.
 - [ ] Class waitlist.
 - [X] Membership plans.
-- [ ] Member progress tracking.
+- [X] Member progress tracking.
 
 ## Running
 Running is implemented, depending on your PHP location.
@@ -51,6 +51,12 @@ Else:
 
 ## Credentials
 
-- carlos@fitnessdown.pt/password123
+Trainer:
+- carlos@fitnessdown.pt/password123 
+
+Admin:
+
 - admin@fitnessdown.pt/password123
+
+Member: 
 - joao@test.pt/password123
