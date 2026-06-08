@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-    }
+    
     if (empty($errors)) {
         $fields = ['name' => $name, 'username' => $username, 'profile_photo' => $photo_path];
         $query = 'UPDATE users SET name = :name, username = :username, profile_photo = :profile_photo';
@@ -169,6 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$user_id]);
         $user = $stmt->fetch();
         $profile_photo = $user['profile_photo'];
+    }
     }
 }
 
