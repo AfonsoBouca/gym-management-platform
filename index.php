@@ -56,7 +56,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="ticker__separator" aria-hidden="true">|</span>
                 <span class="ticker__item">Mechanical Excellence</span>
                 <span class="ticker__separator" aria-hidden="true">|</span>
-                <span class="ticker__item">Est. 2026</span>
+                <span class="ticker__item">Built for better training</span>
             </div>
         </div>
     </section>
@@ -185,7 +185,7 @@ include __DIR__ . '/includes/header.php';
     <section class="location" aria-labelledby="location-title">
         <div class="location__map">
             <iframe
-                src="https://maps.google.com/maps?q=Rua+Dr.+Roberto+Frias,+Porto&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=Porto&t=&z=12&ie=UTF8&iwloc=&output=embed"
                 title="Fitness Down location">
             </iframe>
         </div>

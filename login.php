@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="site-footer__heading">Info</h2>
                     <address class="site-footer__contact">
                         <p>Rua Dr. Roberto Frias 400, Porto</p>
-                        <p><a href="mailto:info@fitnessdown.pt">info@fitnessdown.pt</a></p>
+                        <p><a href="mailto:hello@example.test">hello@example.test</a></p>
                         <p><a href="tel:+351211000000">+351 211 000 000</a></p>
                     </address>
                 </div>

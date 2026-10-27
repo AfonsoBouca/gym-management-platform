@@ -26,7 +26,11 @@ $pdo->exec($schema);
 echo "Schema applied.\n";
 
 // ── helper ─────────────────────────────────────────────────────────
-$pw = password_hash('password123', PASSWORD_DEFAULT);
+$demoPassword = getenv('GYM_DEMO_PASSWORD');
+if ($demoPassword === false || $demoPassword === '') {
+    $demoPassword = bin2hex(random_bytes(12));
+}
+$pw = password_hash($demoPassword, PASSWORD_DEFAULT);
 
 // ── users ──────────────────────────────────────────────────────────
 $insertUser = $pdo->prepare(
@@ -36,16 +40,16 @@ $insertUser = $pdo->prepare(
 
 $users = [
     // trainers (IDs 1-6)
-    ['Carlos Silva',    'carlos@fitnessdown.pt',  'carlos.silva',    $pw, 'trainer'],
-    ['Jorge Lopes',     'jorge@fitnessdown.pt',   'jorge.lopes',     $pw, 'trainer'],
-    ['Sofia Matos',     'sofia@fitnessdown.pt',   'sofia.matos',     $pw, 'trainer'],
-    ['Miguel Santos',   'miguel@fitnessdown.pt',  'miguel.santos',   $pw, 'trainer'],
-    ['Afonso Pereira',  'afonso@fitnessdown.pt',  'afonso.pereira',  $pw, 'trainer'],
-    ['Rita Costa',      'rita@fitnessdown.pt',     'rita.costa',      $pw, 'trainer'],
+    ['Alex Morgan',     'alex.morgan@example.test',   'alex.morgan',   $pw, 'trainer'],
+    ['Jordan Lee',      'jordan.lee@example.test',    'jordan.lee',    $pw, 'trainer'],
+    ['Taylor Smith',    'taylor.smith@example.test',  'taylor.smith',  $pw, 'trainer'],
+    ['Casey Brown',     'casey.brown@example.test',   'casey.brown',   $pw, 'trainer'],
+    ['Morgan Davis',    'morgan.davis@example.test',  'morgan.davis',  $pw, 'trainer'],
+    ['Jamie Wilson',    'jamie.wilson@example.test',  'jamie.wilson',  $pw, 'trainer'],
     // admin (ID 7)
-    ['Admin',           'admin@fitnessdown.pt',   'admin',           $pw, 'admin'],
-    // test member (ID 8)
-    ['João Silva',      'joao@test.pt',           'joao.silva',      $pw, 'member'],
+    ['Demo Admin',      'admin@example.test',          'admin',         $pw, 'admin'],
+    // demo member (ID 8)
+    ['Demo Member',     'member@example.test',         'demo.member',   $pw, 'member'],
 ];
 
 foreach ($users as $u) {
@@ -205,7 +209,7 @@ foreach ($plans as $p) {
 }
 echo "Inserted " . count($plans) . " membership plans.\n";
 
-// ── enrollments for test member (João Silva, user id 8) ───────────
+// ── enrollments for the demo member (user id 8) ───────────────────
 // sessions: 1=Muay Thai Mon, 4=Hyrox Mon, 6=Pilates Tue, 9=Boxing Mon, 12=Stretching Mon, 19=Yoga Wed
 $insertEnrollment = $pdo->prepare(
     "INSERT INTO enrollments (member_id, session_id, status, attended)
@@ -230,7 +234,7 @@ foreach ($enrollments as $e) {
         ':attended' => $e[3],
     ]);
 }
-echo "Inserted " . count($enrollments) . " enrollments for test member.\n";
+echo "Inserted " . count($enrollments) . " enrollments for demo member.\n";
 
 // ── equipment ──────────────────────────────────────────────────────
 $insertEquip = $pdo->prepare(
@@ -343,5 +347,4 @@ echo "Inserted " . count($equipment_items) . " equipment items.\n";
 
 // ── done ───────────────────────────────────────────────────────────
 echo "\n✔  gym.db created successfully at: $dbPath\n";
-echo "   Users password: password123\n";
-echo "   Test member:    joao@test.pt / password123\n";
+echo "   Demo account password: $demoPassword\n";

@@ -1,6 +1,8 @@
-# ltw12g09
+# Fitness Down
 
-### This website is based on multiple gym websites on the internet.
+A gym management platform built with PHP, SQLite, HTML, CSS, and JavaScript.
+
+This website is based on multiple gym websites available online.
 
 ## Features
 
@@ -35,27 +37,28 @@
 - [X] Member progress tracking.
 - [X] REST API.
 
-## Running
-Running is implemented, depending on your PHP location.
+## Running locally
 
-If you have PHP added to your system PATH:
+The project requires PHP with SQLite support. From the project root, initialise
+the sample database and start PHP's built-in development server:
 
-    php database/seed.php
-    php -S localhost:9000 
+```bash
+php database/seed.php
+php -S localhost:9000
+```
 
-Else:
+Then open `http://localhost:9000` in a browser. The seed script creates
+fictional demo accounts for the trainer, administrator, and member roles. Their
+credentials are printed in the terminal when the database is initialised.
 
-    (php_location) database/seed.php
-    (php_location) -S localhost:9000
+## Project structure
 
-## Credentials
+- `admin/`, `member/`, and `trainer/` contain role-specific interfaces.
+- `api/` contains form handlers and REST-style endpoints.
+- `database/` contains the SQLite schema and sample-data seed script.
+- `includes/` contains shared authentication, database, and layout helpers.
+- `assets/`, `css/`, and `js/` contain the front-end resources.
 
-Trainer:
-- carlos@fitnessdown.pt/password123
+## Credits
 
-Admin:
-
-- admin@fitnessdown.pt/password123
-
-Member: 
-- joao@test.pt/password123
+The original project credits and visual assets are preserved in the repository.
